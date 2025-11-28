@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+
+# TypeScript Output folder after compile (Depending on tsconfig.json Settings)
+dist/
+
+# environment variables (don't upload)
+.env
+.env.local
+
+# System files
+.DS_Store
