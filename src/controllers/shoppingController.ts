@@ -11,21 +11,38 @@ import {
 } from '../schemas/shoppingSchemas';
 import { v4 as uuidv4 } from 'uuid';
 
+// Helper function to format Zod errors
+const formatZodErrors = (issues: any[]) => {
+  return issues.map(issue => ({
+    field: issue.path.join('.'),
+    message: issue.message,
+  }));
+};
+
 // GET /api/shopping - Get all shopping items
-export const getAllItems = (
+export const getAllItems = async (
   req: Request<{}, {}, {}, GetAllItemsQuery>,
   res: Response
 ) => {
   try {
     // ✅ Process (no validation needed)
-    let items = processItems(req.query);
+    let items = await processItems(req.query);
     
+    // Ensure items is an array
+    if (!Array.isArray(items)) {
+      console.error('Items is not an array:', items);
+      return res.status(500).json({
+        success: false,
+        message: 'Database returned invalid data',
+      });
+    }
+
     // Parst all fields from TypeScript ( Don't parse page and limit here)
     const { category, purchased, page = '1', limit } = req.query;
 
     // Parse page and limit directly (Simply for demonstration)
     const pageNum = parseInt(page);
-    const limitNum = parseInt(req.query.limit || '10');
+    const limitNum = parseInt(limit || '10');  // Another way for setting default value
 
     // Filter by category
     if (category) {
@@ -51,11 +68,10 @@ export const getAllItems = (
     items.sort((a, b) => 
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
-    
+  
     // Pagination
     const startIndex = (pageNum - 1) * limitNum;
     const endIndex = pageNum * limitNum;
-    
     const paginatedItems = items.slice(startIndex, endIndex);
 
     res.status(200).json({
@@ -76,10 +92,10 @@ export const getAllItems = (
 };
 
 // GET /api/shopping/:id - Get item by ID
-export const getItemById = (req: Request, res: Response) => {
+export const getItemById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const item = storage.getById(id);
+    const item = await storage.getById(id);
 
     if (!item) {
       return res.status(404).json({
@@ -102,7 +118,7 @@ export const getItemById = (req: Request, res: Response) => {
 };
 
 // POST /api/shopping - Create item
-export const createItem = (
+export const createItem = async (
   req: Request<{}, {}, CreateShoppingItemDto>, 
   res: Response
 ) => {
@@ -120,7 +136,7 @@ export const createItem = (
       updatedAt: new Date(),
     };
 
-    const createdItem = storage.create(newItem);
+    const createdItem = await storage.create(newItem);
 
     res.status(201).json({
       success: true,
@@ -137,13 +153,13 @@ export const createItem = (
 };
 
 // PUT /api/shopping/:id - Update item
-export const updateItem = (req: Request, res: Response) => {
+export const updateItem = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const updates: UpdateShoppingItemDto = req.body;
 
     // Validation is now handled by middleware
-    const updatedItem = storage.update(id, updates);
+    const updatedItem = await storage.update(id, updates);
 
     if (!updatedItem) {
       return res.status(404).json({
@@ -167,10 +183,10 @@ export const updateItem = (req: Request, res: Response) => {
 };
 
 // DELETE /api/shopping/:id - Delete item
-export const deleteItem = (req: Request, res: Response) => {
+export const deleteItem = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const deleted = storage.delete(id);
+    const deleted = await storage.delete(id);
 
     if (!deleted) {
       return res.status(404).json({
@@ -193,7 +209,7 @@ export const deleteItem = (req: Request, res: Response) => {
 };
 
 // Internal function - no validation
-function processItems(query: GetAllItemsQuery): ShoppingItem[] {
+async function processItems(query: GetAllItemsQuery): Promise<ShoppingItem[]> {
   // Trust the data, it's already validated
-  return storage.getAll();
+  return await storage.getAll();
 }
