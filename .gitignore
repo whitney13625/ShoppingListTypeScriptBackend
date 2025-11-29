@@ -4,6 +4,10 @@ node_modules/
 # TypeScript Output folder after compile (Depending on tsconfig.json Settings)
 dist/
 
+# Ignore Python specific files
+__pycache__/
+*.pyc
+
 # environment variables (don't upload)
 .env
 .env.local

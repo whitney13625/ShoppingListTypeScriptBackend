@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  # 1. Your TypeScript Application
+  app:
+    build: .
+    ports:
+      - "3000:3000" # Map host port 3000 to container port 3000
+    environment:
+      # Connection details for the database
+      # IMPORTANT: DB_HOST must match the service name 'db' below, not 'localhost'
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: mypassword
+      DB_NAME: shopping_list
+    depends_on:
+      - db
+    restart: on-failure
+
+  # 2. PostgreSQL Database
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: shopping_list
+    ports:
+      - "5432:5432" # Open port 5432 so you can connect via SQL client tools
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

@@ -1,28 +1,28 @@
 // src/data/storage.ts
 
-import { ShoppingItem } from '../types/ShoppingItem';
+import { ShoppingItem } from '../schemas/shoppingSchemas';
 
 
 class InMemoryStorage {
   private items: Map<string, ShoppingItem> = new Map();
 
-  // 取得所有項目
+  // Get all items
   getAll(): ShoppingItem[] {
     return Array.from(this.items.values());
   }
 
-  // 根據 ID 取得單一項目
+  // Get item by ID
   getById(id: string): ShoppingItem | undefined {
     return this.items.get(id);
   }
 
-  // 新增項目
+  // Create new item
   create(item: ShoppingItem): ShoppingItem {
     this.items.set(item.id, item);
     return item;
   }
 
-  // 更新項目
+  // Update item
   update(id: string, updates: Partial<ShoppingItem>): ShoppingItem | undefined {
     const item = this.items.get(id);
     if (!item) return undefined;
@@ -30,7 +30,7 @@ class InMemoryStorage {
     const updatedItem = {
       ...item,
       ...updates,
-      id: item.id, // 確保 ID 不被更改
+      id: item.id, // Make sure ID doesn't change
       updatedAt: new Date(),
     };
 
@@ -38,12 +38,12 @@ class InMemoryStorage {
     return updatedItem;
   }
 
-  // 刪除項目
+  // Delete item
   delete(id: string): boolean {
     return this.items.delete(id);
   }
 
-  // 清空所有項目（用於測試）
+  // Clear all items (for testing purposes)
   clear(): void {
     this.items.clear();
   }

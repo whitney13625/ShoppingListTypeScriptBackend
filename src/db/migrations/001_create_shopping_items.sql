@@ -43,11 +43,12 @@ BEFORE UPDATE ON shopping_items
 FOR EACH ROW 
 EXECUTE FUNCTION update_updated_at_column();
 
+
 -- Insert some sample data (optional)
-INSERT INTO shopping_items (name, quantity, category, purchased) VALUES
-  ('Apple', 5, 'Fruits', false),
-  ('Banana', 10, 'Fruits', false),
-  ('Carrot', 8, 'Vegetables', false),
-  ('Milk', 2, 'Dairy', false),
-  ('Bread', 1, 'Bakery', true)
-ON CONFLICT DO NOTHING;
+-- INSERT INTO shopping_items (name, quantity, category, purchased) VALUES
+--   ('Apple', 5, 'Fruits', false),
+--   ('Banana', 10, 'Fruits', false),
+--   ('Carrot', 8, 'Vegetables', false),
+--   ('Milk', 2, 'Dairy', false),
+--   ('Bread', 1, 'Bakery', true)
+-- ON CONFLICT DO NOTHING;
