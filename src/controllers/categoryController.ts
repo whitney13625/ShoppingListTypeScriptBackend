@@ -2,32 +2,13 @@
 
 import { Request, Response } from 'express';
 import { categoryStorage } from '../data/categoryStorage';
-import { z } from 'zod';
+import { 
+  CreateCategorySchema,
+  UpdateCategorySchema,
+  CategoryIdParamsSchema
+} from '../schemas/categorySchemas';
+import { formatZodErrors } from '../schemas/helper/zodHelper';
 
-// Validation schemas
-const CreateCategorySchema = z.object({
-  name: z.string().min(1, 'Name is required').max(50, 'Name must be at most 50 characters'),
-  description: z.string().max(200, 'Description must be at most 200 characters').optional(),
-  icon: z.string().max(50, 'Icon must be at most 50 characters').optional(),
-});
-
-const UpdateCategorySchema = z.object({
-  name: z.string().min(1).max(50).optional(),
-  description: z.string().max(200).optional(),
-  icon: z.string().max(50).optional(),
-});
-
-const CategoryIdParamsSchema = z.object({
-  id: z.string().uuid('Invalid category ID'),
-});
-
-// Helper function to format Zod errors
-const formatZodErrors = (issues: any[]) => {
-  return issues.map(issue => ({
-    field: issue.path.join('.'),
-    message: issue.message,
-  }));
-};
 
 // GET /api/categories - Get all categories
 export const getAllCategories = async (req: Request, res: Response) => {

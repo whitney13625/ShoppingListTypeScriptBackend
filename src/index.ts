@@ -2,6 +2,9 @@ import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import shoppingRoutes from './routes/shoppingRoutes';
 import categoryRoutes from './routes/categoryRoutes'; 
+import swaggerUi from 'swagger-ui-express';
+import { OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
+import { registry } from './lib/openApiRegistry';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,7 +31,7 @@ app.get('/ping', (req: Request, res: Response) => {
 // Root route
 app.get('/', (req: Request, res: Response) => {
   res.json({
-    message: '歡迎使用購物清單 API',
+    message: 'Welcome to shopping list API',
     endpoints: {
       shopping: {
         'Get all items': 'GET /api/shopping',
@@ -51,6 +54,28 @@ app.get('/', (req: Request, res: Response) => {
 // API routes
 app.use('/api/shopping', shoppingRoutes);
 app.use('/api/categories', categoryRoutes);
+
+// --- Generate OpenAPI Document --- This should be before 404
+const generator = new OpenApiGeneratorV3(registry.definitions);
+
+const openApiDocument = generator.generateDocument({
+  openapi: '3.0.0',
+  info: {
+    version: '1.0.0',
+    title: 'Shopping List API',
+    description: 'API documentation generated automatically from Zod schemas',
+  },
+  servers: [{ url: 'http://localhost:3000' }],
+});
+
+// --- Serve Documentation ---
+// 1. Serve the UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiDocument));
+
+// 2. (Optional) Serve the raw JSON for other tools to consume
+app.get('/api-docs.json', (req, res) => {
+  res.json(openApiDocument);
+});
 
 // 404 error processing
 app.use((req: Request, res: Response) => {

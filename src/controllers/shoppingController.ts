@@ -4,24 +4,11 @@ import { Request, Response } from 'express';
 import { storage } from '../data/storage';
 import { 
   ShoppingItem,
-  CreateShoppingItemSchema,
-  UpdateShoppingItemSchema,
-  GetAllItemsQuerySchema,
-  ItemIdParamsSchema,
   CreateShoppingItemDto,
   UpdateShoppingItemDto,
   GetAllItemsQuery,
-  ItemIdParams,
 } from '../schemas/shoppingSchemas';
 import { v4 as uuidv4 } from 'uuid';
-
-// Helper function to format Zod errors
-const formatZodErrors = (issues: any[]) => {
-  return issues.map(issue => ({
-    field: issue.path.join('.'),
-    message: issue.message,
-  }));
-};
 
 // GET /api/shopping - Get all shopping items
 export const getAllItems = async (
