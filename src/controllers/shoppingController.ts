@@ -4,6 +4,10 @@ import { Request, Response } from 'express';
 import { storage } from '../data/storage';
 import { 
   ShoppingItem,
+  CreateShoppingItemSchema,
+  UpdateShoppingItemSchema,
+  GetAllItemsQuerySchema,
+  ItemIdParamsSchema,
   CreateShoppingItemDto,
   UpdateShoppingItemDto,
   GetAllItemsQuery,
@@ -25,6 +29,7 @@ export const getAllItems = async (
   res: Response
 ) => {
   try {
+    
     // ✅ Process (no validation needed)
     let items = await processItems(req.query);
     
@@ -38,16 +43,16 @@ export const getAllItems = async (
     }
 
     // Parst all fields from TypeScript ( Don't parse page and limit here)
-    const { category, purchased, page = '1', limit } = req.query;
+    const { categoryId, purchased, page = '1', limit } = req.query;
 
     // Parse page and limit directly (Simply for demonstration)
     const pageNum = parseInt(page);
     const limitNum = parseInt(limit || '10');  // Another way for setting default value
 
     // Filter by category
-    if (category) {
-      items = items.filter(item => item.category === category);
-    }
+    if (categoryId) {
+  items = items.filter(item => item.categoryId === categoryId);
+}
 
     // Filter by purchased status if no validation
     if (purchased !== undefined) {
@@ -123,14 +128,14 @@ export const createItem = async (
   res: Response
 ) => {
   try {
-    const { name, quantity, category } = req.body;
+    const { name, quantity, categoryId } = req.body;
 
     // Validation is now handled by middleware
     const newItem: ShoppingItem = {
       id: uuidv4(),
       name,
       quantity,
-      category,
+      categoryId: categoryId || null,
       purchased: false,
       createdAt: new Date(),
       updatedAt: new Date(),

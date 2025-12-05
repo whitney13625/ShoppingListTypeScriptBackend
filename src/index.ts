@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import shoppingRoutes from './routes/shoppingRoutes';
+import categoryRoutes from './routes/categoryRoutes'; 
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -9,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json()); // This handles JSON format (raw + JSON in Postman)
 app.use(express.urlencoded({ extended: true })); // This handles form-urlencoded format (x-www-form-urlencoded in Postman)
 
-// CORS 設定（如果需要前端連接）
+// CORS configuration
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
@@ -18,30 +19,40 @@ app.use((req, res, next) => {
 });
 
 
-// 測試路由
+// Ping route
 app.get('/ping', (req: Request, res: Response) => {
   res.json({ message: 'pong' });
 });
 
 
-// 根路由
+// Root route
 app.get('/', (req: Request, res: Response) => {
   res.json({
     message: '歡迎使用購物清單 API',
     endpoints: {
-      'Get all items': 'GET /api/shopping',
-      'Get single item': 'GET /api/shopping/:id',
-      'Create item': 'POST /api/shopping',
-      'Update item': 'PUT /api/shopping/:id',
-      'Delete item': 'DELETE /api/shopping/:id',
+      shopping: {
+        'Get all items': 'GET /api/shopping',
+        'Get single item': 'GET /api/shopping/:id',
+        'Create item': 'POST /api/shopping',
+        'Update item': 'PUT /api/shopping/:id',
+        'Delete item': 'DELETE /api/shopping/:id',
+      },
+      categories: {
+        'Get all categories': 'GET /api/categories',
+        'Get single category': 'GET /api/categories/:id',
+        'Create category': 'POST /api/categories',
+        'Update category': 'PUT /api/categories/:id',
+        'Delete category': 'DELETE /api/categories/:id',
+      },
     },
   });
 });
 
-// API 路由
+// API routes
 app.use('/api/shopping', shoppingRoutes);
+app.use('/api/categories', categoryRoutes);
 
-// 404 處理
+// 404 error processing
 app.use((req: Request, res: Response) => {
   res.status(404).json({
     success: false,
@@ -49,7 +60,7 @@ app.use((req: Request, res: Response) => {
   });
 });
 
-// 啟動伺服器
+// Run server
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on http://localhost:${PORT}`);
   console.log(`📋 API docs: http://localhost:${PORT}/`);
