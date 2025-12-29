@@ -51,7 +51,7 @@ registerRoute(router, {
   
   // Key：Define Schema here
   request: {
-    query: CategorySchemas.CategoryItemIdParamsSchema, 
+    params: CategorySchemas.CategoryItemIdParamsSchema, 
   },
   
   responses: {

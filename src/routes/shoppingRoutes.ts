@@ -106,7 +106,7 @@ registerRoute(router, {
   description: 'Updates an existing shopping item.',
   
   request: {
-    query: ShoppingSchemas.ItemIdParamsSchema, 
+    params: ShoppingSchemas.ItemIdParamsSchema, 
     body: {
       content: {
         'application/json': {
@@ -136,7 +136,7 @@ registerRoute(router, {
   description: 'Deletes an existing shopping item.',
   
   request: {
-    query: ShoppingSchemas.ItemIdParamsSchema
+    params: ShoppingSchemas.ItemIdParamsSchema
   },
   
   responses: {
