@@ -22,6 +22,10 @@ app.use((req, res, next) => {
 });
 
 
+// --- Generate OpenAPI Document --- This should be called first, before the route (which also registers swagger)
+//  as it calls extendZodWithOpenApi(z)
+const generator = new OpenApiGeneratorV3(registry.definitions);
+
 // Ping route
 app.get('/ping', (req: Request, res: Response) => {
   res.json({ message: 'pong' });
@@ -52,11 +56,8 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // API routes
-app.use('/api/shopping', shoppingRoutes);
+app.use('/', shoppingRoutes);
 app.use('/api/categories', categoryRoutes);
-
-// --- Generate OpenAPI Document --- This should be before 404
-const generator = new OpenApiGeneratorV3(registry.definitions);
 
 const openApiDocument = generator.generateDocument({
   openapi: '3.0.0',

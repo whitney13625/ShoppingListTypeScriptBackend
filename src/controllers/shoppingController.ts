@@ -38,8 +38,8 @@ export const getAllItems = async (
 
     // Filter by category
     if (categoryId) {
-  items = items.filter(item => item.categoryId === categoryId);
-}
+      items = items.filter(item => item.categoryId === categoryId);
+    }
 
     // Filter by purchased status if no validation
     if (purchased !== undefined) {

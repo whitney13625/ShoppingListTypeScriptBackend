@@ -1,7 +1,7 @@
 // src/data/categoryStorage.ts
 
 import { pool } from '../config/database';
-import { Category } from '../schemas/shoppingSchemas';
+import { Category } from '../schemas/categorySchemas';
 
 class CategoryStorage {
   // Get all categories

@@ -1,6 +1,8 @@
 // src/routes/categoryRoutes.ts
 
 import { Router } from 'express';
+import * as CategorySchemas from '../schemas/categorySchemas';
+import { validateBody, validateQuery, validateParams } from '../middleware/zodValidation';
 import {
   getAllCategories,
   getCategoryById,
@@ -11,11 +13,41 @@ import {
 
 const router = Router();
 
-// Categories routes
-router.get('/', getAllCategories);        // GET /api/categories
-router.get('/:id', getCategoryById);      // GET /api/categories/:id
-router.post('/', createCategory);         // POST /api/categories
-router.put('/:id', updateCategory);       // PUT /api/categories/:id
-router.delete('/:id', deleteCategory);    // DELETE /api/categories/:id
+// Define all routes with Zod validation middleware
+
+// GET /api/categories
+router.get(
+  '/',
+  validateQuery(CategorySchemas.GetAllCategoriesSchema),
+  getAllCategories
+);      
+// GET /api/categories/:id
+router.get(
+  '/:id', 
+  validateParams(CategorySchemas.CategoryItemIdParamsSchema),
+  getCategoryById
+);  
+
+// POST /api/categories
+router.post(
+  '/', 
+  validateBody(CategorySchemas.CreateCategorySchema),
+  createCategory
+);  
+
+// PUT /api/categories/:id 
+router.put(
+  '/:id', 
+  validateParams(CategorySchemas.CategoryItemIdParamsSchema),
+  validateBody(CategorySchemas.UpdateCategorySchema),
+  updateCategory
+);     
+
+// DELETE /api/categories/:id  
+router.delete(
+  '/:id', 
+  validateParams(CategorySchemas.CategoryItemIdParamsSchema),
+  deleteCategory
+);    
 
 export default router;

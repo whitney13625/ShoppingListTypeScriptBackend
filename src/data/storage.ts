@@ -93,7 +93,6 @@ class PostgresStorage {
     // Always update updated_at (handled by trigger, but we can also set it)
     fields.push(`updated_at = CURRENT_TIMESTAMP`);
     
-    //if (fields.length === 0) {
     if (fields.length === 1) { // Only updated_at
       // No fields to update
       return this.getById(id);
