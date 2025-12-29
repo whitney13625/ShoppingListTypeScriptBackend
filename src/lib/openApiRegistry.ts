@@ -6,7 +6,7 @@ import * as CategorySchemas from '../schemas/categorySchemas';
 import * as SharedSchemas from '../schemas/sharedSchemas';
 
 export const registry = new OpenAPIRegistry();
-
+/*
 registry.registerPath({
   method: 'get',
   path: '/api/categories',
@@ -124,3 +124,4 @@ registry.registerPath({
     },
   },
 });
+*/

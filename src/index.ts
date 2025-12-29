@@ -57,7 +57,7 @@ app.get('/', (req: Request, res: Response) => {
 
 // API routes
 app.use('/', shoppingRoutes);
-app.use('/api/categories', categoryRoutes);
+app.use('/', categoryRoutes);
 
 const openApiDocument = generator.generateDocument({
   openapi: '3.0.0',

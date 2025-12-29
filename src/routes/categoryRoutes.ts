@@ -2,7 +2,7 @@
 
 import { Router } from 'express';
 import * as CategorySchemas from '../schemas/categorySchemas';
-import { validateBody, validateQuery, validateParams } from '../middleware/zodValidation';
+import * as SharedSchemas from '../schemas/sharedSchemas';
 import {
   getAllCategories,
   getCategoryById,
@@ -10,45 +10,153 @@ import {
   updateCategory,
   deleteCategory,
 } from '../controllers/categoryController';
+import { registerRoute } from '../schemas/helper/routeRegistryHelper';
+
 
 const router = Router();
 
 // Define all routes with Zod validation middleware
 // NOTE: The Swagger is registered in src/lib/openApiRegistry.ts
 
-// GET /api/categories
-router.get(
-  '/',
-  validateQuery(CategorySchemas.GetAllCategoriesSchema),
-  getAllCategories
-);      
-// GET /api/categories/:id
-router.get(
-  '/:id', 
-  validateParams(CategorySchemas.CategoryItemIdParamsSchema),
-  getCategoryById
-);  
+registerRoute(router, {
+  method: 'get',
+  path: '/api/categories',    
+  tags: ['Categories'], 
+  summary: 'Get all Categories',
+  description: 'Retrieves a list of categories',
+  
+  // Key：Define Schema here
+  request: {
+    query: CategorySchemas.GetAllCategoriesSchema, 
+  },
+  
+  responses: {
+    200: {
+      description: 'Successful response',
+      content: { 'application/json': { schema: CategorySchemas.GetAllCategoriesResponseSchema} }, 
+    },
+    500: {
+      description: 'Internal Server Error'
+    }
+  },
+  controller: getAllCategories, 
+});
 
-// POST /api/categories
-router.post(
-  '/', 
-  validateBody(CategorySchemas.CreateCategorySchema),
-  createCategory
-);  
+registerRoute(router, {
+  method: 'get',
+  path: '/api/categories/:id',    
+  tags: ['Categories'], 
+  summary: 'Get a Category by ID',
+  description: 'Get a category by ID',
+  
+  // Key：Define Schema here
+  request: {
+    query: CategorySchemas.CategoryItemIdParamsSchema, 
+  },
+  
+  responses: {
+    200: {
+      description: 'Successful response',
+      content: { 'application/json': { schema: CategorySchemas.CategorySchema} }, 
+    },
+    500: {
+      description: 'Internal Server Error'
+    }
+  },
+  controller: getCategoryById, 
+});
 
-// PUT /api/categories/:id 
-router.put(
-  '/:id', 
-  validateParams(CategorySchemas.CategoryItemIdParamsSchema),
-  validateBody(CategorySchemas.UpdateCategorySchema),
-  updateCategory
-);     
+registerRoute(router, {
+  method: 'post',
+  path: '/api/categories',    
+  tags: ['Categories'], 
+  summary: 'Create a Category',
+  description: 'Create a new category, the "name" field is required.',
+  
+  // Key：Define Schema here
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: CategorySchemas.CreateCategorySchema,
+        },
+      },
+    },
+  },
+  
+  responses: {
+    200: {
+      description: 'Successful response',
+      content: { 'application/json': { schema: CategorySchemas.CreateCategoryResponseSchema} }, 
+    },
+    500: {
+      description: 'Internal Server Error'
+    }
+  },
+  controller: createCategory, 
+});
 
-// DELETE /api/categories/:id  
-router.delete(
-  '/:id', 
-  validateParams(CategorySchemas.CategoryItemIdParamsSchema),
-  deleteCategory
-);    
+registerRoute(router, {
+  method: 'put',
+  path: '/api/categories/:id', 
+  tags: ['Categories'],
+  summary: 'Update a Category by ID',
+  description: 'Update a category, the "id" field is required.',
+  
+  request: {
+    params: CategorySchemas.CategoryItemIdParamsSchema,
+    body: {
+      content: {
+        'application/json': {
+          schema: CategorySchemas.UpdateCategorySchema,
+        },
+      },
+    },
+  },
+  
+  responses: {
+    200: { 
+      description: 'Successfully updated category',
+      content: {
+        'application/json': {
+          schema: CategorySchemas.CategorySchema,
+        },
+      },
+    },
+    404: {
+        description: 'Category not found'
+    }
+  },
+  controller: updateCategory,
+});
+
+registerRoute(router, {
+  method: 'delete',
+  path: '/api/categories/:id', 
+  tags: ['Categories'],
+  summary: 'Delete a Category by ID',
+  description: 'Delete a category, the "id" field is required.',
+  
+  request: {
+    params: CategorySchemas.CategoryItemIdParamsSchema,
+  },
+  
+  responses: {
+    200: {
+      description: 'Successfully deleted category',
+      content: {
+        'application/json': {
+          schema: SharedSchemas.ApiSuccessResponseSchema,
+        },
+      },
+    },
+    404: {
+        description: 'Category not found'
+    }
+  },
+  
+  // 綁定 Controller
+  controller: deleteCategory,
+});
 
 export default router;
