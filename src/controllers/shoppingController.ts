@@ -1,7 +1,7 @@
 // src/controllers/shoppingController.ts
 
 import { Request, Response } from 'express';
-import { storage } from '../data/storage';
+import { storage } from '../data/shoppingStorage';
 import { 
   ShoppingItem,
   ShoppingItemWithCategory,
