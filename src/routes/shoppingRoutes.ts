@@ -130,7 +130,7 @@ registerRoute(router, {
 
 registerRoute(router, {
   method: 'delete',
-  path: '/shopping/:id',             
+  path: '/api/shopping/:id',             
   tags: ['Shopping'],    
   summary: 'Delete a shopping item',
   description: 'Deletes an existing shopping item.',
