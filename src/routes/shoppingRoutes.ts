@@ -17,7 +17,7 @@ const router = Router();
 
 // Define all routes with Zod validation middleware
 
-// With Swagger registration
+// With Swagger registration (DRY Solution, don't need to define in one place and write swagger in the other)
 registerRoute(router, {
   method: 'get',
   path: '/api/shopping',    
@@ -33,7 +33,7 @@ registerRoute(router, {
   responses: {
     200: {
       description: 'Successful response',
-      content: { 'application/json': { schema: SharedSchemas.ApiSuccessResponseSchema } }, 
+      content: { 'application/json': { schema: ShoppingSchemas.ShoppingItemListResponseSchema} }, 
     },
     500: {
       description: 'Internal Server Error'
@@ -130,7 +130,7 @@ registerRoute(router, {
 
 registerRoute(router, {
   method: 'delete',
-  path: '/api/shopping/:id',             
+  path: '/shopping/:id',             
   tags: ['Shopping'],    
   summary: 'Delete a shopping item',
   description: 'Deletes an existing shopping item.',

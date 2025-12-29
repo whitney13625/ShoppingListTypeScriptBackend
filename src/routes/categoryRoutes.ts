@@ -14,6 +14,7 @@ import {
 const router = Router();
 
 // Define all routes with Zod validation middleware
+// NOTE: The Swagger is registered in src/lib/openApiRegistry.ts
 
 // GET /api/categories
 router.get(

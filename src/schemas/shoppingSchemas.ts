@@ -37,6 +37,8 @@ export const ShoppingItemWithCategorySchema = ShoppingItemSchema.extend({
   category: CategorySchema.optional().nullable(),
 });
 
+export const ShoppingItemListResponseSchema = z.array(ShoppingItemWithCategorySchema);
+
 // Schema for creating new item (no id, dates, or purchased status)
 export const CreateShoppingItemSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be at most 100 characters').openapi({ example: 'Brussel Sprouts' }),

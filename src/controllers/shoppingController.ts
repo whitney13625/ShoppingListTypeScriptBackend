@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import { storage } from '../data/storage';
 import { 
   ShoppingItem,
+  ShoppingItemWithCategory,
   CreateShoppingItemDto,
   UpdateShoppingItemDto,
   GetAllItemsQuery,
@@ -201,7 +202,7 @@ export const deleteItem = async (req: Request, res: Response) => {
 };
 
 // Internal function - no validation
-async function processItems(query: GetAllItemsQuery): Promise<ShoppingItem[]> {
+async function processItems(query: GetAllItemsQuery): Promise<ShoppingItemWithCategory[]> {
   // Trust the data, it's already validated
   return await storage.getAll();
 }

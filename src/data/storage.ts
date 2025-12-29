@@ -45,7 +45,7 @@ class PostgresStorage {
   // Create new item
   async create(item: ShoppingItem): Promise<ShoppingItem> {
     const result = await pool.query(
-      `INSERT INTO shopping_items (id, name, quantity, categoryId, purchased, created_at, updated_at)
+      `INSERT INTO shopping_items (id, name, quantity, category_id, purchased, created_at, updated_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
       [
@@ -153,6 +153,7 @@ class PostgresStorage {
       name: row.name,
       quantity: row.quantity,
       categoryId: row.category_id,
+      category: row.category_name,
       purchased: row.purchased,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
