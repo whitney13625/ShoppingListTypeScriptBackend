@@ -19,14 +19,13 @@ export const CategoryEnum = z.enum([
 ]);
 */
 
-
-
 // Shopping item schema (full item)
 export const ShoppingItemSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1, 'Name is required').max(100, 'Name must be at most 100 characters').openapi({ example: 'Spinach' }),
   quantity: z.number().int().nonnegative('Quantity must be non-negative').openapi({ example: 'Vegitables' }),
   categoryId: z.string().uuid().optional().nullable(),
+  categoryName: z.string().optional().nullable(),
   purchased: z.boolean(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -43,13 +42,15 @@ export const ShoppingItemListResponseSchema = z.array(ShoppingItemWithCategorySc
 export const CreateShoppingItemSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be at most 100 characters').openapi({ example: 'Brussel Sprouts' }),
   quantity: z.number().int().nonnegative('Quantity must be non-negative').openapi({ example: 10 }),
-  categoryId: z.string().uuid('Invalid category ID').optional().nullable(),
+  categoryName: z.string().optional(),
+  categoryId: z.string().uuid().optional().nullable(),
 }).openapi({ description: 'Create Shopping item' });
 
 // Schema for updating item (all fields optional)
 export const UpdateShoppingItemSchema = z.object({
   name: z.string().min(1).max(100).optional().openapi({ example: 'Brussel Sprouts' }),
   quantity: z.number().int().nonnegative().optional().openapi({ example: 10 }),
+  categoryName: z.string().optional(),
   categoryId: z.string().uuid().optional().nullable(),
   purchased: z.boolean().optional().openapi({ example: true }),
 }).openapi({ description: 'Update Shopping item' });

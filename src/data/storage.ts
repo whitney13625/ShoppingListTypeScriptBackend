@@ -44,78 +44,159 @@ class PostgresStorage {
 
   // Create new item
   async create(item: ShoppingItem): Promise<ShoppingItem> {
-    const result = await pool.query(
-      `INSERT INTO shopping_items (id, name, quantity, category_id, purchased, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING *`,
-      [
-        item.id,
-        item.name,
-        item.quantity,
-        item.categoryId || null,
-        item.purchased,
-        item.createdAt,
-        item.updatedAt,
-      ]
-    );
-    
-    // Fetch with category details (make sure data integrity, instad of returning *)
-    return this.getById(result.rows[0].id) as Promise<ShoppingItem>;
+    const client = await pool.connect(); // individual connection for transaction
+
+    try {
+      await client.query('BEGIN'); // 2. 開始交易
+
+      let finalCategoryId: string | null = null;
+
+      if (item.categoryName) {
+        const findCatRes = await client.query(
+          `SELECT id FROM shopping_categories WHERE name = $1`,
+          [item.categoryName]
+        );
+
+        if (findCatRes.rows.length > 0) {
+          finalCategoryId = findCatRes.rows[0].id;
+        } else {
+          // Assume DB autogenerates UUID (if not, needs to create here)
+          // Add created_at, updated_at default value
+          const createCatRes = await client.query(
+            `INSERT INTO shopping_categories (name, description, icon, created_at, updated_at)
+             VALUES ($1, '', '', NOW(), NOW())
+             RETURNING id`,
+            [item.categoryName]
+          );
+          finalCategoryId = createCatRes.rows[0].id;
+        }
+      } else if (item.categoryId) {
+        // Can accept either category name or category id
+        finalCategoryId = item.categoryId;
+      }
+
+      const insertItemRes = await client.query(
+        `INSERT INTO shopping_items 
+           (id, name, quantity, category_id, purchased, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         RETURNING id`, // only returns id, can retrieve the rest later
+        [
+          item.id,
+          item.name,
+          item.quantity,
+          finalCategoryId,
+          item.purchased,
+          item.createdAt,
+          item.updatedAt,
+        ]
+      );
+
+      await client.query('COMMIT');
+
+      const newItem = await this.getById(insertItemRes.rows[0].id);
+      
+      if (!newItem) throw new Error('Failed to retrieve created item');
+      
+      return newItem;
+
+    } catch (error) {
+      await client.query('ROLLBACK'); // 💥 Revert if error (Including the Category created)
+      throw error;
+    } finally {
+      client.release(); // Release Pool
+    }
   }
 
   // Update item
   async update(id: string, updates: Partial<ShoppingItem>): Promise<ShoppingItem | undefined> {
-    // Build dynamic UPDATE query
-    const fields: string[] = [];
-    const values: any[] = [];
-    let paramCount = 1;
-    
-    if (updates.name !== undefined) {
-      fields.push(`name = $${paramCount++}`);
-      values.push(updates.name);
-    }
-    
-    if (updates.quantity !== undefined) {
-      fields.push(`quantity = $${paramCount++}`);
-      values.push(updates.quantity);
-    }
-    
-    if (updates.categoryId !== undefined) {
-      fields.push(`category_id = ${paramCount++}`);
-      values.push(updates.categoryId);
-    }
-    
-    if (updates.purchased !== undefined) {
-      fields.push(`purchased = $${paramCount++}`);
-      values.push(updates.purchased);
-    }
-    
-    // Always update updated_at (handled by trigger, but we can also set it)
-    fields.push(`updated_at = CURRENT_TIMESTAMP`);
-    
-    if (fields.length === 1) { // Only updated_at
-      // No fields to update
+    const client = await pool.connect(); 
+
+    try {
+      await client.query('BEGIN');
+
+      let finalCategoryId: string | null | undefined = updates.categoryId;
+
+      if (updates.categoryName) {
+        const findCatRes = await client.query(
+          `SELECT id FROM shopping_categories WHERE name = $1`,
+          [updates.categoryName]
+        );
+
+        if (findCatRes.rows.length > 0) {
+          finalCategoryId = findCatRes.rows[0].id;
+        } else {
+          const createCatRes = await client.query(
+            `INSERT INTO shopping_categories (name, description, icon, created_at, updated_at)
+             VALUES ($1, '', '', NOW(), NOW())
+             RETURNING id`,
+            [updates.categoryName]
+          );
+          finalCategoryId = createCatRes.rows[0].id;
+        }
+      }
+
+      const fields: string[] = [];
+      const values: any[] = [];
+      let paramCount = 1;
+      
+      if (updates.name !== undefined) {
+        fields.push(`name = $${paramCount++}`);
+        values.push(updates.name);
+      }
+      
+      if (updates.quantity !== undefined) {
+        fields.push(`quantity = $${paramCount++}`);
+        values.push(updates.quantity);
+      }
+      
+      // NOTE: Should check for undefined (means no change), but allow null (means remove category)
+      if (finalCategoryId !== undefined) {
+        fields.push(`category_id = $${paramCount++}`);
+        values.push(finalCategoryId);
+      }
+      
+      if (updates.purchased !== undefined) {
+        fields.push(`purchased = $${paramCount++}`);
+        values.push(updates.purchased);
+      }
+      
+      // Always update updated_at
+      fields.push(`updated_at = CURRENT_TIMESTAMP`);
+      
+      // if no fields other than update_at to update, and we don't find new categoryId
+      // (only have updated_at fields)
+      if (fields.length === 1) { 
+        await client.query('ROLLBACK'); // 沒事做，釋放資源
+        return this.getById(id);
+      }
+      
+      // Add id as last parameter for WHERE clause
+      values.push(id);
+      
+      const query = `
+        UPDATE shopping_items 
+        SET ${fields.join(', ')}
+        WHERE id = $${paramCount}
+        RETURNING id
+      `;
+      
+      const result = await client.query(query, values);
+      
+      if (result.rows.length === 0) {
+        await client.query('ROLLBACK'); 
+        return undefined;
+      }
+
+      await client.query('COMMIT'); 
+
       return this.getById(id);
+
+    } catch (error) {
+      await client.query('ROLLBACK'); 
+      throw error;
+    } finally {
+      client.release();
     }
-    
-    // Add id as last parameter
-    values.push(id);
-    
-    const query = `
-      UPDATE shopping_items 
-      SET ${fields.join(', ')}
-      WHERE id = $${paramCount}
-      RETURNING *
-    `;
-    
-    const result = await pool.query(query, values);
-    
-    if (result.rows.length === 0) {
-      return undefined;
-    }
-    
-    // Fetch with category details
-    return this.getById(id);
   }
 
   // Delete item

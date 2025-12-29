@@ -116,7 +116,7 @@ export const createItem = async (
   res: Response
 ) => {
   try {
-    const { name, quantity, categoryId } = req.body;
+    const { name, quantity, categoryId, categoryName } = req.body;
 
     // Validation is now handled by middleware
     const newItem: ShoppingItem = {
@@ -124,6 +124,7 @@ export const createItem = async (
       name,
       quantity,
       categoryId: categoryId || null,
+      categoryName: categoryName || null,
       purchased: false,
       createdAt: new Date(),
       updatedAt: new Date(),
