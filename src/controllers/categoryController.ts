@@ -2,11 +2,7 @@
 
 import { Request, Response } from 'express';
 import { categoryStorage } from '../data/categoryStorage';
-import { 
-  CreateCategorySchema,
-  UpdateCategorySchema,
-  CategoryIdParamsSchema
-} from '../schemas/categorySchemas';
+import * as CategorySchemas from '../schemas/categorySchemas';
 import { formatZodErrors } from '../schemas/helper/zodHelper';
 
 
@@ -52,7 +48,7 @@ export const getAllCategories = async (req: Request, res: Response) => {
 export const getCategoryById = async (req: Request, res: Response) => {
   try {
     // Validate params
-    const paramsResult = CategoryIdParamsSchema.safeParse(req.params);
+    const paramsResult = CategorySchemas.CategoryIdParamsSchema.safeParse(req.params);
     
     if (!paramsResult.success) {
       return res.status(400).json({
@@ -98,7 +94,7 @@ export const getCategoryById = async (req: Request, res: Response) => {
 export const createCategory = async (req: Request, res: Response) => {
   try {
     // Validate body
-    const bodyResult = CreateCategorySchema.safeParse(req.body);
+    const bodyResult = CategorySchemas.CreateCategorySchema.safeParse(req.body);
     
     if (!bodyResult.success) {
       return res.status(400).json({
@@ -144,7 +140,7 @@ export const createCategory = async (req: Request, res: Response) => {
 export const updateCategory = async (req: Request, res: Response) => {
   try {
     // Validate params
-    const paramsResult = CategoryIdParamsSchema.safeParse(req.params);
+    const paramsResult = CategorySchemas.CategoryIdParamsSchema.safeParse(req.params);
     
     if (!paramsResult.success) {
       return res.status(400).json({
@@ -155,7 +151,7 @@ export const updateCategory = async (req: Request, res: Response) => {
     }
     
     // Validate body
-    const bodyResult = UpdateCategorySchema.safeParse(req.body);
+    const bodyResult = CategorySchemas.UpdateCategorySchema.safeParse(req.body);
     
     if (!bodyResult.success) {
       return res.status(400).json({
@@ -207,7 +203,7 @@ export const updateCategory = async (req: Request, res: Response) => {
 export const deleteCategory = async (req: Request, res: Response) => {
   try {
     // Validate params
-    const paramsResult = CategoryIdParamsSchema.safeParse(req.params);
+    const paramsResult = CategorySchemas.CategoryIdParamsSchema.safeParse(req.params);
     
     if (!paramsResult.success) {
       return res.status(400).json({
