@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
 import { app } from '../../src/app';
-import { applyMigrations, resetDb, closePool } from '../helpers/dbSetup';
+import { resetDb, testPool } from '../helpers/dbSetup';
 
 describe('Shopping API Integration Tests', () => {
 
@@ -46,6 +46,21 @@ describe('Shopping API Integration Tests', () => {
       const item = response.body.data;
       expect(item.category.name).toBe('Space');
       // New Category Icon could be empty string (According to the logic from ShoppingStorage)
+    });
+
+    it('should ROLLBACK category creation if item creation fails', async () => {
+        
+        const newItemData = {
+            name: 'Rollback Test',
+            quantity: -100, // Invalid DB Constraint
+            categoryName: 'Ghost Category' 
+        };
+
+        await request(app).post('/api/shopping').send(newItemData);
+
+        
+        const catRes = await testPool.query("SELECT * FROM shopping_categories WHERE name = 'Ghost Category'");
+        expect(catRes.rows.length).toBe(0); 
     });
   });
 });

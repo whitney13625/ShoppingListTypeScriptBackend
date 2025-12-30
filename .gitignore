@@ -4,6 +4,9 @@ node_modules/
 # TypeScript Output folder after compile (Depending on tsconfig.json Settings)
 dist/
 
+# Ignore test coverage files
+coverage
+
 # Ignore Python specific files
 __pycache__/
 *.pyc
