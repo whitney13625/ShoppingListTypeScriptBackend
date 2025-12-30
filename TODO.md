@@ -13,7 +13,7 @@ This document outlines the tasks required to complete the Shopping List Backend 
 - [X] Create `Dockerfile` for containerizing the application (refer to `./Dockerfile`).
 - [X] Create `docker-compose.yml` for orchestrating the application and database (refer to `./docker-compose.yml`).
 - [X] Ensure the application connects to the database using the service name defined in `docker-compose.yml` (`DB_HOST: db`).
-- [ ] Test Docker setup by building and running the containers (`docker-compose up --build`). (Cannot be checked by me)
+- [X]] Test Docker setup by building and running the containers (`docker-compose up --build`).
 
 ## Project Structure
 
@@ -34,15 +34,15 @@ This document outlines the tasks required to complete the Shopping List Backend 
 
 ## Configuration
 
-- [ ] Create a `.env` file (if not already created) in the project root directory. (Cannot be checked by me)
-- [ ] Define database connection environment variables. (Cannot be checked by me)
+- [X] Create a `.env` file (if not already created) in the project root directory. 
+- [X] Define database connection environment variables. 
 
 ## Database Migrations
 
 - [X] Configure the database connection pool (in `src/config/database.ts`) using environment variables.
 - [X] Implement the database migration script (`src/db/migrate.ts`) to create the `shopping_items` table (refer to `src/db/migrations/001_create_shopping_items.sql`).
-- [ ] Run the migration script: `npm run migrate` (defined in `package.json`). (Cannot be checked by me)
-- [ ] Verify the `shopping_items` table is created in the PostgreSQL database. (Cannot be checked by me)
+- [X] Run the migration script: `npm run migrate` (defined in `package.json`).
+- [X] Verify the `shopping_items` table is created in the PostgreSQL database. 
 
 ## API Endpoints
 
