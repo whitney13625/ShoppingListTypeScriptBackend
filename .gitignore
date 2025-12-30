@@ -10,7 +10,7 @@ __pycache__/
 
 # environment variables (don't upload)
 .env
-.env.local
+.env.*
 
 # System files
 .DS_Store
