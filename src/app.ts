@@ -1,4 +1,4 @@
-import 'dotenv/config';
+
 import express, { Request, Response } from 'express';
 import shoppingRoutes from './routes/shoppingRoutes';
 import categoryRoutes from './routes/categoryRoutes'; 
@@ -7,7 +7,6 @@ import { OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
 import { registry } from './lib/openApiRegistry';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json()); // This handles JSON format (raw + JSON in Postman)
@@ -86,8 +85,4 @@ app.use((req: Request, res: Response) => {
   });
 });
 
-// Run server
-app.listen(PORT, () => {
-  console.log(`🚀 Server is running on http://localhost:${PORT}`);
-  console.log(`📋 API docs: http://localhost:${PORT}/`);
-});
+export { app };
