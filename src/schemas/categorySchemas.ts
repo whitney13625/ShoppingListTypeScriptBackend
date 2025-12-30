@@ -24,8 +24,8 @@ export const GetAllCategoriesSchema = z.object({
   page: z.string().regex(/^\d+$/, 'Page must be a number').optional(),
   limit: z.string().regex(/^\d+$/, 'Limit must be a number').optional(),
   categoryId: z.uuid('Invalid category ID').optional(),
-  purchased: booleanSchema,
-  search: searchSchema,
+  purchased: booleanSchema.optional(),
+  search: searchSchema.optional(),
 }).openapi({ description: 'Get all Categories' });
 
 export const GetAllCategoriesResponseSchema = z.array(
@@ -49,7 +49,7 @@ export const CreateCategoryResponseSchema = CreateCategorySchema.extend({
 }).openapi({ description: 'Response for Creating a new Category' });
 
 export const UpdateCategorySchema = z.object({
-  name: nameSchema,
+  name: nameSchema.optional(),
   description: descriptionSchema,
   icon: iconSchema,
 }).openapi({ description: 'Update a Category' });
