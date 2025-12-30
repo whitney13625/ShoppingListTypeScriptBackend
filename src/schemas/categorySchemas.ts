@@ -2,24 +2,30 @@
 
 import '../lib/zodSetup';
 import { z } from 'zod';
+import { uuidSchema, searchSchema, booleanSchema } from './sharedRules';
+
+const nameSchema = z.string().min(1, 'Name is required').max(50, 'Name is too long');
+const descriptionSchema = z.string().max(200, 'Description is too long').optional();
+const iconSchema = z.emoji('Icon must be an emoji').optional();
+const dateSchema = z.date().openapi({ example: '2025-12-29T10:00:00.000Z' });
 
 // Category schema
 export const CategorySchema = z.object({
-  id: z.string().uuid(),
-  name: z.string().min(1).max(50).openapi({ example: 'Vegitables' }),
-  description: z.string().optional().openapi({ example: 'Something Green' }),
-  icon: z.string().optional().openapi({ example: '🥬' }),
-  createdAt: z.date().openapi({ example: '2025-12-29T10:00:00.000Z' }),
-  updatedAt: z.date().openapi({ example: '2025-12-29T10:00:00.000Z' }),
+  id: z.uuid(),
+  name: nameSchema.openapi({ example: 'Vegitables' }),
+  description: descriptionSchema.openapi({ example: 'Something Green' }),
+  icon: iconSchema.openapi({ example: '🥬' }),
+  createdAt: dateSchema,
+  updatedAt: dateSchema.optional(),
 }).openapi({ description: 'Category data object' });
 
 // Schema for query parameters (GET /api/shopping)
 export const GetAllCategoriesSchema = z.object({
   page: z.string().regex(/^\d+$/, 'Page must be a number').optional(),
   limit: z.string().regex(/^\d+$/, 'Limit must be a number').optional(),
-  categoryId: z.string().uuid('Invalid category ID').optional(),
-  purchased: z.enum(['true', 'false']).optional().openapi({ example: 'true' }),
-  search: z.string().min(1).max(100).optional().openapi({ example: '10' }),
+  categoryId: z.uuid('Invalid category ID').optional(),
+  purchased: booleanSchema,
+  search: searchSchema,
 }).openapi({ description: 'Get all Categories' });
 
 export const GetAllCategoriesResponseSchema = z.array(
@@ -28,32 +34,32 @@ export const GetAllCategoriesResponseSchema = z.array(
 
 // Schema for URL parameters with ID
 export const CategoryItemIdParamsSchema = z.object({
-  id: z.string().uuid('Invalid ID format'),
+  id: uuidSchema,
 }).openapi({ description: 'Unique ID' });
 
 export const CreateCategorySchema = z.object({
-  name: z.string().min(1, 'Name is required').max(50, 'Name must be at most 50 characters'),
-  description: z.string().max(200, 'Description must be at most 200 characters').optional(),
-  icon: z.string().max(50, 'Icon must be at most 50 characters').optional(),
+  name: nameSchema,
+  description: descriptionSchema,
+  icon: iconSchema,
 }).openapi({ description: 'Create a new Category' });
 
 export const CreateCategoryResponseSchema = CreateCategorySchema.extend({
-  id: z.string().uuid().openapi({ example: '550e8400-e29b-41d4-a716-446655440000' }),
-  createdAt: z.date().openapi({ example: '2025-12-29T10:00:00.000Z' })
+  id: uuidSchema,
+  createdAt: dateSchema
 }).openapi({ description: 'Response for Creating a new Category' });
 
 export const UpdateCategorySchema = z.object({
-  name: z.string().min(1).max(50).optional(),
-  description: z.string().max(200).optional(),
-  icon: z.string().max(50).optional(),
+  name: nameSchema,
+  description: descriptionSchema,
+  icon: iconSchema,
 }).openapi({ description: 'Update a Category' });
 
 export const UpdateCategoryResponseSchema = CreateCategoryResponseSchema.extend({
-  updatedAt: z.date().openapi({ example: '2025-12-29T10:00:00.000Z' })
+  updatedAt: dateSchema
 }).openapi({ description: 'Response for Updating a Category' });
 
 export const CategoryIdParamsSchema = z.object({
-  id: z.string().uuid('Invalid category ID'),
+  id: uuidSchema,
 }).openapi({ description: 'Category ID parameter' });
 
 
