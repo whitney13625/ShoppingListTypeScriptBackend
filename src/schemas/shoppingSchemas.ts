@@ -44,7 +44,16 @@ export const CreateShoppingItemSchema = z.object({
   quantity: z.number().int().nonnegative('Quantity must be non-negative').openapi({ example: 10 }),
   categoryName: z.string().optional(),
   categoryId: z.string().uuid().optional().nullable(),
-}).openapi({ description: 'Create Shopping item' });
+})
+.refine((data) => {
+  // Logic: At least one of them must have a value (truthy)
+  // If categoryName is null/undefined, categoryId must be present, and vice versa.
+  return !!data.categoryName || !!data.categoryId;
+}, {
+  message: "Either categoryName or categoryId must be provided",
+  path: ["categoryId"], // This attaches the error to the categoryId field in the response
+})
+.openapi({ description: 'Create Shopping item' });
 
 // Schema for updating item (all fields optional)
 export const UpdateShoppingItemSchema = z.object({

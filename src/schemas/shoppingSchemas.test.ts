@@ -33,7 +33,8 @@ describe('Shopping Schemas', () => {
     it('should fail if name is too long (>100 chars)', () => {
       const invalidData = { 
         name: 'a'.repeat(101), 
-        quantity: 1 
+        quantity: 1,
+        categoryName: 'Dairy'
       };
       const result = CreateShoppingItemSchema.safeParse(invalidData);
       expect(result.success).toBe(false);
@@ -42,7 +43,8 @@ describe('Shopping Schemas', () => {
     it('should fail if quantity is negative', () => {
       const invalidData = { 
         name: 'Milk', 
-        quantity: -1 
+        quantity: -1,
+        categoryName: 'Dairy'
       };
       const result = CreateShoppingItemSchema.safeParse(invalidData);
       expect(result.success).toBe(false);
@@ -66,6 +68,24 @@ describe('Shopping Schemas', () => {
       };
       const result = CreateShoppingItemSchema.safeParse(invalidData);
       expect(result.success).toBe(false);
+    });
+
+    it('should fail if neither categoryName nor categoryId is provided', () => {
+      const invalidData = { 
+        name: 'Milk', 
+        quantity: 1
+      };
+      const result = CreateShoppingItemSchema.safeParse(invalidData);
+      expect(result.success).toBe(false);
+        if (!result.success) {
+            expect(result.error.issues).toEqual(
+                expect.arrayContaining([
+                expect.objectContaining({
+                    message: "Either categoryName or categoryId must be provided",
+                }),
+                ])
+            );
+        }
     });
   });
 
