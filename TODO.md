@@ -44,6 +44,8 @@ This document outlines the tasks required to complete the Shopping List Backend 
 - [X] Run the migration script: `npm run migrate` (defined in `package.json`).
 - [X] Verify the `shopping_items` table is created in the PostgreSQL database. 
 
+
+
 ## API Endpoints
 
 - [X] Implement the following API endpoints (in `src/controllers/shoppingController.ts`):

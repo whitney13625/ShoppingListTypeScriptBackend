@@ -12,21 +12,11 @@ export const validate = (schema: ZodType) => {
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        return res.status(400).json({
-          success: false,
-          message: 'Validation failed',
-          errors: error.issues.map((err) => ({
-            field: err.path.join('.'),
-            message: err.message,
-          })),
-        });
+        return next(error);
       }
       
       // Unknown error
-      return res.status(500).json({
-        success: false,
-        message: 'Internal server error during validation',
-      });
+      return next(new Error('Internal server error during validation'));
     }
   };
 };
@@ -39,14 +29,7 @@ export const validateBody = (schema: ZodType) => {
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid request body',
-          errors: error.issues.map((err) => ({
-            field: err.path.join('.'),
-            message: err.message,
-          })),
-        });
+        return next(error);
       }
       next(error);
     }
@@ -59,14 +42,7 @@ export const validateQuery = (schema: ZodType) => {
     const result = schema.safeParse(req.query);
 
     if (!result.success) {
-        return res.status(400).json({
-            success: false,
-            message: 'Invalid query parameters',
-            errors: result.error.issues.map((err) => ({
-            field: err.path.join('.'),
-            message: err.message,
-            })),
-        });
+        return next(result.error);
     }
     next();
   };
@@ -78,14 +54,7 @@ export const validateParams = (schema: ZodType) => {
     const result = schema.safeParse(req.params);
     
     if (!result.success) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid URL parameters',
-        errors: result.error.issues.map((issue) => ({
-          field: issue.path.join('.'),
-          message: issue.message,
-        })),
-      });
+      return next(result.error);
     }
     
     // Type assertion needed for params
