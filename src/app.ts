@@ -6,6 +6,9 @@ import swaggerUi from 'swagger-ui-express';
 import { OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
 import { registry } from './lib/openApiRegistry';
 
+import { errorHandler } from './middleware/errorHandler';
+import { ApiError } from './errors/ApiError';
+
 const app = express();
 
 // Middleware
@@ -78,11 +81,11 @@ app.get('/api-docs.json', (req, res) => {
 });
 
 // 404 error processing
-app.use((req: Request, res: Response) => {
-  res.status(404).json({
-    success: false,
-    message: 'Path not found',
-  });
+app.use((req: Request, res: Response, next) => {
+  next(new ApiError(404, 'Path not found'));
 });
+
+// Global error handler
+app.use(errorHandler);
 
 export { app };
