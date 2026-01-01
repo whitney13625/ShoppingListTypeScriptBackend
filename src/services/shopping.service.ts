@@ -39,7 +39,7 @@ export class ShoppingService {
     const newItem: ShoppingItem = {
       id: data.id || randomUUID(),
       name: data.name!,
-      quantity: data.quantity || '1',
+      quantity: data.quantity || 1,
       purchased: data.purchased || false,
       createdAt: new Date(),
       updatedAt: new Date(),
