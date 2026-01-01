@@ -1,10 +1,10 @@
-// src/data/storage.ts - PostgreSQL implementation
+// src/repositories/implementations/shopping.postgres.repository.ts
 
-import { pool } from '../config/database';
-import { ShoppingItem } from '../schemas/shoppingSchemas';
+import { pool } from '../../config/database';
+import { ShoppingItem } from '../../schemas/shoppingSchemas';
+import { IShoppingRepository } from '../interfaces/shoppingRepository.interface';
 
-class PostgresStorage {
-  // Get all items
+export class ShoppingPostgresRepository implements IShoppingRepository {
   async getAll(): Promise<ShoppingItem[]> {
     const result = await pool.query(`
       SELECT 
@@ -21,7 +21,6 @@ class PostgresStorage {
     return result.rows.map(this.mapRowToItemWithCategory);
   }
 
-  // Get item by ID
   async getById(id: string): Promise<ShoppingItem | undefined> {
     const result = await pool.query(`
       SELECT 
@@ -42,12 +41,11 @@ class PostgresStorage {
     return this.mapRowToItemWithCategory(result.rows[0]);
   }
 
-  // Create new item
   async create(item: ShoppingItem): Promise<ShoppingItem> {
-    const client = await pool.connect(); // individual connection for transaction
+    const client = await pool.connect();
 
     try {
-      await client.query('BEGIN'); // 2. 開始交易
+      await client.query('BEGIN');
 
       let finalCategoryId: string | null = null;
 
@@ -60,8 +58,6 @@ class PostgresStorage {
         if (findCatRes.rows.length > 0) {
           finalCategoryId = findCatRes.rows[0].id;
         } else {
-          // Assume DB autogenerates UUID (if not, needs to create here)
-          // Add created_at, updated_at default value
           const createCatRes = await client.query(
             `INSERT INTO shopping_categories (name, description, icon, created_at, updated_at)
              VALUES ($1, '', '', NOW(), NOW())
@@ -71,7 +67,6 @@ class PostgresStorage {
           finalCategoryId = createCatRes.rows[0].id;
         }
       } else if (item.categoryId) {
-        // Can accept either category name or category id
         finalCategoryId = item.categoryId;
       }
 
@@ -79,7 +74,7 @@ class PostgresStorage {
         `INSERT INTO shopping_items 
            (id, name, quantity, category_id, purchased, created_at, updated_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7)
-         RETURNING id`, // only returns id, can retrieve the rest later
+         RETURNING id`,
         [
           item.id,
           item.name,
@@ -100,14 +95,13 @@ class PostgresStorage {
       return newItem;
 
     } catch (error) {
-      await client.query('ROLLBACK'); // 💥 Revert if error (Including the Category created)
+      await client.query('ROLLBACK');
       throw error;
     } finally {
-      client.release(); // Release Pool
+      client.release();
     }
   }
 
-  // Update item
   async update(id: string, updates: Partial<ShoppingItem>): Promise<ShoppingItem | undefined> {
     const client = await pool.connect(); 
 
@@ -149,7 +143,6 @@ class PostgresStorage {
         values.push(updates.quantity);
       }
       
-      // NOTE: Should check for undefined (means no change), but allow null (means remove category)
       if (finalCategoryId !== undefined) {
         fields.push(`category_id = $${paramCount++}`);
         values.push(finalCategoryId);
@@ -160,17 +153,13 @@ class PostgresStorage {
         values.push(updates.purchased);
       }
       
-      // Always update updated_at
       fields.push(`updated_at = CURRENT_TIMESTAMP`);
       
-      // if no fields other than update_at to update, and we don't find new categoryId
-      // (only have updated_at fields)
       if (fields.length === 1) { 
-        await client.query('ROLLBACK'); // 沒事做，釋放資源
+        await client.query('ROLLBACK');
         return this.getById(id);
       }
       
-      // Add id as last parameter for WHERE clause
       values.push(id);
       
       const query = `
@@ -199,7 +188,6 @@ class PostgresStorage {
     }
   }
 
-  // Delete item
   async delete(id: string): Promise<boolean> {
     const result = await pool.query(
       'DELETE FROM shopping_items WHERE id = $1',
@@ -209,12 +197,10 @@ class PostgresStorage {
     return result.rowCount !== null && result.rowCount > 0;
   }
 
-  // Clear all items (for testing)
   async clear(): Promise<void> {
     await pool.query('DELETE FROM shopping_items');
   }
   
-  // Helper method to map database row to ShoppingItem
   private mapRowToItem(row: any): ShoppingItem {
     return {
       id: row.id,
@@ -227,7 +213,6 @@ class PostgresStorage {
     };
   }
 
-  // Helper method to map database row with category details
   private mapRowToItemWithCategory(row: any): ShoppingItem {
     const item: any = {
       id: row.id,
@@ -240,7 +225,6 @@ class PostgresStorage {
       updatedAt: row.updated_at,
     };
     
-    // Add category details if available
     if (row.category_id) {
       item.category = {
         id: row.category_id,
@@ -253,6 +237,3 @@ class PostgresStorage {
     return item;
   }
 }
-
-// Export singleton instance
-export const storage = new PostgresStorage();

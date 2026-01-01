@@ -1,16 +1,15 @@
 // src/controllers/shoppingController.ts
 
 import { Request, Response, NextFunction } from 'express';
-import { storage } from '../data/shoppingStorage';
-import { 
-  ShoppingItem,
-  ShoppingItemWithCategory,
-  CreateShoppingItemDto,
-  UpdateShoppingItemDto,
-  GetAllItemsQuery,
-} from '../schemas/shoppingSchemas';
-import { v4 as uuidv4 } from 'uuid';
-import { ApiError } from '../errors/ApiError';
+import { ShoppingService } from '../services/shopping.service';
+import { ShoppingPostgresRepository } from '../repositories/implementations/shopping.postgres.repository';
+import { CategoryPostgresRepository } from '../repositories/implementations/category.postgres.repository';
+import { GetAllItemsQuery } from '../schemas/shoppingSchemas';
+
+// Instantiate repositories and service
+const shoppingRepository = new ShoppingPostgresRepository();
+const categoryRepository = new CategoryPostgresRepository();
+const shoppingService = new ShoppingService(shoppingRepository, categoryRepository);
 
 // GET /api/shopping - Get all shopping items
 export const getAllItems = async (
@@ -19,58 +18,41 @@ export const getAllItems = async (
   next: NextFunction
 ) => {
   try {
+    const items = await shoppingService.getAllItems();
     
-    // ✅ Process (no validation needed)
-    let items = await processItems(req.query);
-    
-    // Ensure items is an array
-    if (!Array.isArray(items)) {
-      return next(new ApiError(500, 'Database returned invalid data'));
-    }
+    // Filtering and pagination should be in the service layer, but for now, we'll do it here.
+    const { categoryId, purchased, page = '1', limit = '10', search } = req.query;
 
-    // Parst all fields from TypeScript ( Don't parse page and limit here)
-    const { categoryId, purchased, page = '1', limit } = req.query;
+    let filteredItems = items;
 
-    // Parse page and limit directly (Simply for demonstration)
-    const pageNum = parseInt(page);
-    const limitNum = parseInt(limit || '10');  // Another way for setting default value
-
-    // Filter by category
     if (categoryId) {
-      items = items.filter(item => item.categoryId === categoryId);
+      filteredItems = filteredItems.filter(item => item.categoryId === categoryId);
     }
 
-    // Filter by purchased status if no validation
     if (purchased !== undefined) {
       const isPurchased = purchased === 'true';
-      items = items.filter(item => item.purchased === isPurchased);
+      filteredItems = filteredItems.filter(item => item.purchased === isPurchased);
     }
     
-    // Search by name
-    const search = req.query.search as String; // Parsing by Type Assersion (for demonstration only)
     if (search) {
       const searchLower = search.toLowerCase();
-      items = items.filter(item => 
+      filteredItems = filteredItems.filter(item => 
         item.name.toLowerCase().includes(searchLower)
       );
     }
 
-    // Sort by creation date (newest first)
-    items.sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  
-    // Pagination
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
     const startIndex = (pageNum - 1) * limitNum;
     const endIndex = pageNum * limitNum;
-    const paginatedItems = items.slice(startIndex, endIndex);
+    const paginatedItems = filteredItems.slice(startIndex, endIndex);
 
     res.status(200).json({
       success: true,
       count: paginatedItems.length,
-      total: items.length,
-      page,
-      totalPages: Math.ceil(items.length / limitNum),
+      total: filteredItems.length,
+      page: pageNum,
+      totalPages: Math.ceil(filteredItems.length / limitNum),
       data: paginatedItems,
     });
   } catch (error) {
@@ -82,12 +64,7 @@ export const getAllItems = async (
 export const getItemById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const item = await storage.getById(id);
-
-    if (!item) {
-      return next(new ApiError(404, 'Item not found'));
-    }
-
+    const item = await shoppingService.getItemById(id);
     res.status(200).json({
       success: true,
       data: item,
@@ -99,27 +76,12 @@ export const getItemById = async (req: Request, res: Response, next: NextFunctio
 
 // POST /api/shopping - Create item
 export const createItem = async (
-  req: Request<{}, {}, CreateShoppingItemDto>, 
+  req: Request, 
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { name, quantity, categoryId, categoryName } = req.body;
-
-    // Validation is now handled by middleware
-    const newItem: ShoppingItem = {
-      id: uuidv4(),
-      name,
-      quantity,
-      categoryId: categoryId || null,
-      categoryName: categoryName || null,
-      purchased: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    const createdItem = await storage.create(newItem);
-
+    const createdItem = await shoppingService.createItem(req.body);
     res.status(201).json({
       success: true,
       message: 'Item created successfully',
@@ -134,15 +96,7 @@ export const createItem = async (
 export const updateItem = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const updates: UpdateShoppingItemDto = req.body;
-
-    // Validation is now handled by middleware
-    const updatedItem = await storage.update(id, updates);
-
-    if (!updatedItem) {
-      return next(new ApiError(404, 'Item not found'));
-    }
-
+    const updatedItem = await shoppingService.updateItem(id, req.body);
     res.status(200).json({
       success: true,
       message: 'Item updated successfully',
@@ -157,12 +111,7 @@ export const updateItem = async (req: Request, res: Response, next: NextFunction
 export const deleteItem = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const deleted = await storage.delete(id);
-
-    if (!deleted) {
-      return next(new ApiError(404, 'Item not found'));
-    }
-
+    await shoppingService.deleteItem(id);
     res.status(200).json({
       success: true,
       message: 'Item deleted successfully',
@@ -171,9 +120,3 @@ export const deleteItem = async (req: Request, res: Response, next: NextFunction
     next(error);
   }
 };
-
-// Internal function - no validation
-async function processItems(query: GetAllItemsQuery): Promise<ShoppingItemWithCategory[]> {
-  // Trust the data, it's already validated
-  return await storage.getAll();
-}
