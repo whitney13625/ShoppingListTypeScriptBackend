@@ -1,10 +1,10 @@
-// src/repositories/implementations/shopping.postgres.repository.ts
+// src/repositories/implementations/postgresShoppingRepository.ts
 
 import { pool } from '../../config/database';
 import { ShoppingItem } from '../../schemas/shoppingSchemas';
-import { IShoppingRepository } from '../interfaces/shoppingRepository.interface';
+import { ShoppingRepository } from '../interfaces/shoppingRepository';
 
-export class ShoppingPostgresRepository implements IShoppingRepository {
+export class PostgresShoppingRepository implements ShoppingRepository {
   async getAll(): Promise<ShoppingItem[]> {
     const result = await pool.query(`
       SELECT 
