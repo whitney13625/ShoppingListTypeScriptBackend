@@ -1,9 +1,9 @@
-// src/repositories/implementations/shopping.in-memory.repository.ts
+// src/repositories/implementations/inMemoryShoppingRepository.ts
 
 import { ShoppingItem } from '../../schemas/shoppingSchemas';
-import { IShoppingRepository } from '../interfaces/shoppingRepository.interface';
+import { ShoppingRepository } from '../interfaces/shoppingRepository';
 
-export class ShoppingInMemoryRepository implements IShoppingRepository {
+export class InMemoryShoppingRepository implements ShoppingRepository {
   private items: Map<string, ShoppingItem> = new Map();
 
   async getAll(): Promise<ShoppingItem[]> {

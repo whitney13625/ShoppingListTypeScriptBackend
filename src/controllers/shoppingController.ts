@@ -1,14 +1,14 @@
 // src/controllers/shoppingController.ts
 
 import { Request, Response, NextFunction } from 'express';
-import { ShoppingService } from '../services/shopping.service';
-import { ShoppingPostgresRepository } from '../repositories/implementations/shopping.postgres.repository';
-import { CategoryPostgresRepository } from '../repositories/implementations/category.postgres.repository';
+import { ShoppingService } from '../services/shoppingService';
+import { PostgresShoppingRepository } from '../repositories/implementations/postgresShoppingRepository';
+import { PostgresCategoryRepository } from '../repositories/implementations/postgresCategoryRepository';
 import { GetAllItemsQuery } from '../schemas/shoppingSchemas';
 
 // Instantiate repositories and service
-const shoppingRepository = new ShoppingPostgresRepository();
-const categoryRepository = new CategoryPostgresRepository();
+const shoppingRepository = new PostgresShoppingRepository();
+const categoryRepository = new PostgresCategoryRepository();
 const shoppingService = new ShoppingService(shoppingRepository, categoryRepository);
 
 // GET /api/shopping - Get all shopping items
