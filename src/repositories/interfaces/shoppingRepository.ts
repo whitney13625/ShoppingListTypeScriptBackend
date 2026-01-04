@@ -1,8 +1,8 @@
-// src/repositories/interfaces/shoppingRepository.interface.ts
+// src/repositories/interfaces/shoppingRepository.ts
 
 import { ShoppingItem } from '../../schemas/shoppingSchemas';
 
-export interface IShoppingRepository {
+export interface ShoppingRepository {
   getAll(): Promise<ShoppingItem[]>;
   getById(id: string): Promise<ShoppingItem | undefined>;
   create(item: ShoppingItem): Promise<ShoppingItem>;

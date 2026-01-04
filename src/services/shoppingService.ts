@@ -1,15 +1,15 @@
-// src/services/shopping.service.ts
+// src/services/shoppingService.ts
 
-import { IShoppingRepository } from '../repositories/interfaces/shoppingRepository.interface';
-import { ICategoryRepository } from '../repositories/interfaces/categoryRepository.interface';
+import { ShoppingRepository } from '../repositories/interfaces/shoppingRepository';
+import { CategoryRepository } from '../repositories/interfaces/categoryRepository';
 import { ShoppingItem } from '../schemas/shoppingSchemas';
 import { ApiError } from '../errors/ApiError';
 import { randomUUID } from 'crypto';
 
 export class ShoppingService {
   constructor(
-    private shoppingRepository: IShoppingRepository,
-    private categoryRepository: ICategoryRepository
+    private shoppingRepository: ShoppingRepository,
+    private categoryRepository: CategoryRepository
   ) {}
 
   async getAllItems(): Promise<ShoppingItem[]> {

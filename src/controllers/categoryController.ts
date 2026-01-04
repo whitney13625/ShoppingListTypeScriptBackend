@@ -1,11 +1,11 @@
 // src/controllers/categoryController.ts
 
 import { Request, Response, NextFunction } from 'express';
-import { CategoryService } from '../services/category.service';
-import { CategoryPostgresRepository } from '../repositories/implementations/category.postgres.repository';
+import { CategoryService } from '../services/categoryService';
+import { PostgresCategoryRepository } from '../repositories/implementations/postgresCategoryRepository';
 
 // Instantiate the service with the repository
-const categoryRepository = new CategoryPostgresRepository();
+const categoryRepository = new PostgresCategoryRepository();
 const categoryService = new CategoryService(categoryRepository);
 
 // GET /api/categories - Get all categories

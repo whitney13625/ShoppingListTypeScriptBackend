@@ -1,10 +1,10 @@
-// src/repositories/implementations/category.in-memory.repository.ts
+// src/repositories/implementations/inMemoryCategoryRepository.ts
 
 import { Category } from '../../schemas/categorySchemas';
-import { ICategoryRepository } from '../interfaces/categoryRepository.interface';
+import { CategoryRepository } from '../interfaces/categoryRepository';
 import { randomUUID } from 'crypto';
 
-export class CategoryInMemoryRepository implements ICategoryRepository {
+export class InMemoryCategoryRepository implements CategoryRepository {
   private categories: Map<string, Category> = new Map();
   private shoppingItems: Map<string, { categoryId?: string }> = new Map(); // Simplified for this repo
 

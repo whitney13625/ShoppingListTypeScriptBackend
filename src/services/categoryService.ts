@@ -1,11 +1,11 @@
-// src/services/category.service.ts
+// src/services/categoryService.ts
 
-import { ICategoryRepository } from '../repositories/interfaces/categoryRepository.interface';
+import { CategoryRepository } from '../repositories/interfaces/categoryRepository';
 import { Category } from '../schemas/categorySchemas';
 import { ApiError } from '../errors/ApiError';
 
 export class CategoryService {
-  constructor(private categoryRepository: ICategoryRepository) {}
+  constructor(private categoryRepository: CategoryRepository) {}
 
   async getAllCategories(): Promise<Category[]> {
     return this.categoryRepository.getAll();

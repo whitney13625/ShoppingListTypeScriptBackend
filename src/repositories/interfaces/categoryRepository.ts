@@ -1,8 +1,8 @@
-// src/repositories/interfaces/categoryRepository.interface.ts
+// src/repositories/interfaces/categoryRepository.ts
 
 import { Category } from '../../schemas/categorySchemas';
 
-export interface ICategoryRepository {
+export interface CategoryRepository {
   getAll(): Promise<Category[]>;
   getById(id: string): Promise<Category | undefined>;
   getByName(name: string): Promise<Category | undefined>;

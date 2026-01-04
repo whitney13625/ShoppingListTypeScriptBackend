@@ -1,10 +1,10 @@
-// src/repositories/implementations/category.postgres.repository.ts
+// src/repositories/implementations/postgresCategoryRepository.ts
 
 import { pool } from '../../config/database';
 import { Category } from '../../schemas/categorySchemas';
-import { ICategoryRepository } from '../interfaces/categoryRepository.interface';
+import { CategoryRepository } from '../interfaces/categoryRepository';
 
-export class CategoryPostgresRepository implements ICategoryRepository {
+export class PostgresCategoryRepository implements CategoryRepository {
   async getAll(): Promise<Category[]> {
     const result = await pool.query(`
       SELECT * FROM shopping_categories
