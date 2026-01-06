@@ -3,7 +3,7 @@ import { pool } from '../../config/database';
 import { User } from '../../schemas/authSchemas';
 import { UserRepository } from '../interfaces/userRepository';
 
-export class PostgresShoppingRepository implements UserRepository {
+export class PostgresUserRepository implements UserRepository {
 
     async createUser(email: string, passwordHash: string): Promise<User> {
         const result = await pool.query('INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING *', [email, passwordHash]);

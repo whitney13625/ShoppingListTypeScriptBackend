@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
 import { hashPassword } from '../utils/auth';
 import { RegisterSchema } from '../schemas/authSchemas'; 
+import { PostgresUserRepository } from '../repositories/implementations/postgresUserRepository';
+
+const userRepository = new PostgresUserRepository();
 
 export const register = async (req: Request, res: Response) => {
     try {
@@ -10,8 +13,8 @@ export const register = async (req: Request, res: Response) => {
         // 2. Hash the password
         const hashedPassword = await hashPassword(validatedData.password);
 
-        // 3. TODO: Save to Database using Raw SQL
-        db.query('INSERT INTO users (email, password_hash) ...', [validatedData.email, hashedPassword])
+        // 3. Save to Database using Raw SQL
+        await userRepository.createUser(validatedData.email, hashedPassword);
 
         return res.status(201).json({ message: "User registered successfully" });
 
