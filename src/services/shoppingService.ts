@@ -12,26 +12,26 @@ export class ShoppingService {
     private categoryRepository: CategoryRepository
   ) {}
 
-  async getAllItems(): Promise<ShoppingItem[]> {
-    return this.shoppingRepository.getAll();
+  async getAllItems(userId: string): Promise<ShoppingItem[]> {
+    return this.shoppingRepository.getAll(userId);
   }
 
-  async getItemById(id: string): Promise<ShoppingItem> {
-    const item = await this.shoppingRepository.getById(id);
+  async getItemById(userId: string, id: string): Promise<ShoppingItem> {
+    const item = await this.shoppingRepository.getById(userId, id);
     if (!item) {
       throw new ApiError(404, 'Shopping item not found');
     }
     return item;
   }
 
-  async createItem(data: Partial<ShoppingItem>): Promise<ShoppingItem> {
+  async createItem(userId: string, data: Partial<ShoppingItem>): Promise<ShoppingItem> {
     let categoryId: string | undefined | null = data.categoryId;
 
     // If categoryName is provided, find or create the category
     if (data.categoryName) {
-      let category = await this.categoryRepository.getByName(data.categoryName);
+      let category = await this.categoryRepository.getByName(userId, data.categoryName);
       if (!category) {
-        category = await this.categoryRepository.create({ name: data.categoryName });
+        category = await this.categoryRepository.create(userId, { name: data.categoryName });
       }
       categoryId = category.id;
     }
@@ -46,30 +46,30 @@ export class ShoppingService {
       categoryId: categoryId,
     };
 
-    return this.shoppingRepository.create(newItem);
+    return this.shoppingRepository.create(userId, newItem);
   }
 
-  async updateItem(id: string, updates: Partial<ShoppingItem>): Promise<ShoppingItem> {
+  async updateItem(userId: string, id: string, updates: Partial<ShoppingItem>): Promise<ShoppingItem> {
     let categoryId: string | undefined | null = updates.categoryId;
 
     // If categoryName is provided, find or create the category
     if (updates.categoryName) {
-      let category = await this.categoryRepository.getByName(updates.categoryName);
+      let category = await this.categoryRepository.getByName(userId, updates.categoryName);
       if (!category) {
-        category = await this.categoryRepository.create({ name: updates.categoryName });
+        category = await this.categoryRepository.create(userId, { name: updates.categoryName });
       }
       categoryId = category.id;
     }
 
-    const updatedItem = await this.shoppingRepository.update(id, { ...updates, categoryId });
+    const updatedItem = await this.shoppingRepository.update(userId, id, { ...updates, categoryId });
     if (!updatedItem) {
       throw new ApiError(404, 'Shopping item not found');
     }
     return updatedItem;
   }
 
-  async deleteItem(id: string): Promise<void> {
-    const deleted = await this.shoppingRepository.delete(id);
+  async deleteItem(userId: string, id: string): Promise<void> {
+    const deleted = await this.shoppingRepository.delete(userId, id);
     if (!deleted) {
       throw new ApiError(404, 'Shopping item not found');
     }

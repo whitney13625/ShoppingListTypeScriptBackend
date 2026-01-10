@@ -5,19 +5,20 @@ import { Category } from '../../schemas/categorySchemas';
 import { CategoryRepository } from '../interfaces/categoryRepository';
 
 export class PostgresCategoryRepository implements CategoryRepository {
-  async getAll(): Promise<Category[]> {
+  async getAll(userId: string): Promise<Category[]> {
     const result = await pool.query(`
       SELECT * FROM shopping_categories
+      WHERE user_id = $1
       ORDER BY name ASC
-    `);
+    `, [userId]);
     
     return result.rows.map(this.mapRowToCategory);
   }
 
-  async getById(id: string): Promise<Category | undefined> {
+  async getById(userId: string, id: string): Promise<Category | undefined> {
     const result = await pool.query(
-      `SELECT * FROM shopping_categories WHERE id = $1`,
-      [id]
+      `SELECT * FROM shopping_categories WHERE id = $1 AND user_id = $2`,
+      [id, userId]
     );
     
     if (result.rows.length === 0) {
@@ -27,10 +28,10 @@ export class PostgresCategoryRepository implements CategoryRepository {
     return this.mapRowToCategory(result.rows[0]);
   }
 
-  async getByName(name: string): Promise<Category | undefined> {
+  async getByName(userId: string, name: string): Promise<Category | undefined> {
     const result = await pool.query(
-      `SELECT * FROM shopping_categories WHERE name = $1`,
-      [name]
+      `SELECT * FROM shopping_categories WHERE name = $1 AND user_id = $2`,
+      [name, userId]
     );
     
     if (result.rows.length === 0) {
@@ -40,18 +41,19 @@ export class PostgresCategoryRepository implements CategoryRepository {
     return this.mapRowToCategory(result.rows[0]);
   }
 
-  async create(category: Omit<Category, 'id' | 'createdAt' | 'updatedAt'>): Promise<Category> {
+  async create(userId: string, category: Omit<Category, 'id' | 'createdAt' | 'updatedAt'>): Promise<Category> {
     const result = await pool.query(
-      `INSERT INTO shopping_categories (name, description, icon)
-       VALUES ($1, $2, $3)
+      `INSERT INTO shopping_categories (name, description, icon, user_id)
+       VALUES ($1, $2, $3, $4)
        RETURNING *`,
-      [category.name, category.description || null, category.icon || null]
+      [category.name, category.description || null, category.icon || null, userId]
     );
     
     return this.mapRowToCategory(result.rows[0]);
   }
 
   async update(
+    userId: string,
     id: string,
     updates: Partial<Omit<Category, 'id' | 'createdAt' | 'updatedAt'>>
   ): Promise<Category | undefined> {
@@ -75,15 +77,15 @@ export class PostgresCategoryRepository implements CategoryRepository {
     }
     
     if (fields.length === 0) {
-      return this.getById(id);
+      return this.getById(userId, id);
     }
     
-    values.push(id);
+    values.push(id, userId);
     
     const query = `
       UPDATE shopping_categories 
       SET ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $${paramCount}
+      WHERE id = $${paramCount++} AND user_id = $${paramCount}
       RETURNING *
     `;
     
@@ -96,11 +98,11 @@ export class PostgresCategoryRepository implements CategoryRepository {
     return this.mapRowToCategory(result.rows[0]);
   }
 
-  async delete(id: string): Promise<boolean> {
+  async delete(userId: string, id: string): Promise<boolean> {
     try {
       const result = await pool.query(
-        `DELETE FROM shopping_categories WHERE id = $1`,
-        [id]
+        `DELETE FROM shopping_categories WHERE id = $1 AND user_id = $2`,
+        [id, userId]
       );
       
       return result.rowCount !== null && result.rowCount > 0;
@@ -112,19 +114,19 @@ export class PostgresCategoryRepository implements CategoryRepository {
     }
   }
 
-  async isInUse(id: string): Promise<boolean> {
+  async isInUse(userId: string, id: string): Promise<boolean> {
     const result = await pool.query(
-      `SELECT EXISTS(SELECT 1 FROM shopping_items WHERE category_id = $1) as in_use`,
-      [id]
+      `SELECT EXISTS(SELECT 1 FROM shopping_items WHERE category_id = $1 AND user_id = $2) as in_use`,
+      [id, userId]
     );
     
     return result.rows[0].in_use;
   }
 
-  async getUsageCount(id: string): Promise<number> {
+  async getUsageCount(userId: string, id: string): Promise<number> {
     const result = await pool.query(
-      `SELECT COUNT(*) as count FROM shopping_items WHERE category_id = $1`,
-      [id]
+      `SELECT COUNT(*) as count FROM shopping_items WHERE category_id = $1 AND user_id = $2`,
+      [id, userId]
     );
     
     return parseInt(result.rows[0].count);

@@ -1,5 +1,6 @@
 
 import express, { Request, Response } from 'express';
+import authRoutes from './routes/authRoutes';
 import shoppingRoutes from './routes/shoppingRoutes';
 import categoryRoutes from './routes/categoryRoutes'; 
 import swaggerUi from 'swagger-ui-express';
@@ -58,6 +59,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // API routes
+app.use('/', authRoutes);
 app.use('/', shoppingRoutes);
 app.use('/', categoryRoutes);
 

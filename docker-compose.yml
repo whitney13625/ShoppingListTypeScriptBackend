@@ -3,6 +3,8 @@ services:
   # 1. Your TypeScript Application
   app:
     build: .
+    env_file:
+      - .env
     ports:
       - "3000:3000" # Map host port 3000 to container port 3000
     environment:

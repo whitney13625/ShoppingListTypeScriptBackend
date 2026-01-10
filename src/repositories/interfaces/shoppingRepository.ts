@@ -3,10 +3,10 @@
 import { ShoppingItem } from '../../schemas/shoppingSchemas';
 
 export interface ShoppingRepository {
-  getAll(): Promise<ShoppingItem[]>;
-  getById(id: string): Promise<ShoppingItem | undefined>;
-  create(item: ShoppingItem): Promise<ShoppingItem>;
-  update(id: string, updates: Partial<ShoppingItem>): Promise<ShoppingItem | undefined>;
-  delete(id: string): Promise<boolean>;
-  clear(): Promise<void>;
+  getAll(userId: string): Promise<ShoppingItem[]>;
+  getById(userId: string, id: string): Promise<ShoppingItem | undefined>;
+  create(userId: string, item: ShoppingItem): Promise<ShoppingItem>;
+  update(userId: string, id: string, updates: Partial<ShoppingItem>): Promise<ShoppingItem | undefined>;
+  delete(userId: string, id: string): Promise<boolean>;
+  clear(userId: string, ): Promise<void>;
 }

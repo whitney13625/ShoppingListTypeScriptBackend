@@ -22,15 +22,16 @@ export const LoginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 }).openapi({ description: 'Login Data Object' });
 
-export const AuthResponseSchema = z.object({
-  token: z.string().openapi({ example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' }),
-}).openapi({ description: 'Authentication Response Object' });
-
 export const UserSchema = z.object({
   id: z.uuid(),
   email: z.email(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
 }).openapi({ description: 'User Object' });
+
+
+export const AuthResponseSchema = z.object({
+  token: z.string().openapi({ example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' }),
+  user: UserSchema
+}).openapi({ description: 'Authentication Response Object' });
+
 
 export type User = z.infer<typeof UserSchema>;

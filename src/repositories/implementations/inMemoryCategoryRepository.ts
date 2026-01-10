@@ -5,22 +5,40 @@ import { CategoryRepository } from '../interfaces/categoryRepository';
 import { randomUUID } from 'crypto';
 
 export class InMemoryCategoryRepository implements CategoryRepository {
-  private categories: Map<string, Category> = new Map();
-  private shoppingItems: Map<string, { categoryId?: string }> = new Map(); // Simplified for this repo
+  private userCategories: Map<string, Map<string, Category>> = new Map();
+  private userShoppingItems: Map<string, Map<string, { categoryId?: string }>> = new Map(); // Simplified for this repo
 
-  async getAll(): Promise<Category[]> {
-    return Array.from(this.categories.values()).sort((a, b) => a.name.localeCompare(b.name));
+  private getCategoriesForUser(userId: string): Map<string, Category> {
+    if (!this.userCategories.has(userId)) {
+      this.userCategories.set(userId, new Map());
+    }
+    return this.userCategories.get(userId)!;
   }
 
-  async getById(id: string): Promise<Category | undefined> {
-    return this.categories.get(id);
+  private getShoppingItemsForUser(userId: string): Map<string, { categoryId?: string }> {
+    if (!this.userShoppingItems.has(userId)) {
+      this.userShoppingItems.set(userId, new Map());
+    }
+    return this.userShoppingItems.get(userId)!;
   }
 
-  async getByName(name: string): Promise<Category | undefined> {
-    return Array.from(this.categories.values()).find(c => c.name === name);
+  async getAll(userId: string): Promise<Category[]> {
+    const categories = this.getCategoriesForUser(userId);
+    return Array.from(categories.values()).sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  async create(categoryData: Omit<Category, 'id' | 'createdAt' | 'updatedAt'>): Promise<Category> {
+  async getById(userId: string, id: string): Promise<Category | undefined> {
+    const categories = this.getCategoriesForUser(userId);
+    return categories.get(id);
+  }
+
+  async getByName(userId: string, name: string): Promise<Category | undefined> {
+    const categories = this.getCategoriesForUser(userId);
+    return Array.from(categories.values()).find(c => c.name === name);
+  }
+
+  async create(userId: string, categoryData: Omit<Category, 'id' | 'createdAt' | 'updatedAt'>): Promise<Category> {
+    const categories = this.getCategoriesForUser(userId);
     const newCategory: Category = {
       id: randomUUID(),
       ...categoryData,
@@ -28,41 +46,46 @@ export class InMemoryCategoryRepository implements CategoryRepository {
       description: categoryData.description || undefined,
       icon: categoryData.icon || undefined,
     };
-    this.categories.set(newCategory.id, newCategory);
+    categories.set(newCategory.id, newCategory);
     return newCategory;
   }
 
-  async update(id: string, updates: Partial<Omit<Category, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Category | undefined> {
-    const existing = this.categories.get(id);
+  async update(userId: string, id: string, updates: Partial<Omit<Category, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Category | undefined> {
+    const categories = this.getCategoriesForUser(userId);
+    const existing = categories.get(id);
     if (!existing) {
       return undefined;
     }
     const updated: Category = { ...existing, ...updates, updatedAt: new Date() };
-    this.categories.set(id, updated);
+    categories.set(id, updated);
     return updated;
   }
 
-  async delete(id: string): Promise<boolean> {
-    if (await this.isInUse(id)) {
-        throw new Error('Cannot delete category that is in use');
+  async delete(userId: string, id: string): Promise<boolean> {
+    const categories = this.getCategoriesForUser(userId);
+    if (await this.isInUse(userId, id)) {
+        return false;
     }
-    return this.categories.delete(id);
+    return categories.delete(id);
   }
 
-  async isInUse(id: string): Promise<boolean> {
-    return Array.from(this.shoppingItems.values()).some(item => item.categoryId === id);
+  async isInUse(userId: string, id: string): Promise<boolean> {
+    const shoppingItems = this.getShoppingItemsForUser(userId);
+    return Array.from(shoppingItems.values()).some(item => item.categoryId === id);
   }
 
-  async getUsageCount(id: string): Promise<number> {
-    return Array.from(this.shoppingItems.values()).filter(item => item.categoryId === id).length;
+  async getUsageCount(userId: string, id: string): Promise<number> {
+    const shoppingItems = this.getShoppingItemsForUser(userId);
+    return Array.from(shoppingItems.values()).filter(item => item.categoryId === id).length;
   }
 
   // Helper for tests
-  public setItems(items: Map<string, { categoryId?: string }>) {
-    this.shoppingItems = items;
+  public setItems(userId: string, items: Map<string, { categoryId?: string }>) {
+    this.userShoppingItems.set(userId, items);
   }
 
   public clear() {
-    this.categories.clear();
+    this.userCategories.clear();
+    this.userShoppingItems.clear();
   }
 }

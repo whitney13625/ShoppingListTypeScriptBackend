@@ -31,8 +31,6 @@ export class PostgresUserRepository implements UserRepository {
         return {
           id: row.id,
           email: row.name,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at,
         };
       }
 }

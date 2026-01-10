@@ -4,11 +4,12 @@ import { ZodType } from 'zod';
 import { registry } from '../../lib/openApiRegistry'; 
 import { validateQuery, validateParams, validateBody } from '../../middleware/zodValidation';
 import { authMiddleware } from '../../middleware/authMiddleware';
+import { AuthRequest } from '../../controllers/interfaces/AuthRequest';
 
 
 // Define Config interface: Inherite, but for passing controller
 interface AppRouteConfig extends RouteConfig {
-  controller: (req: Request<any, any, any, any>, res: Response, next: NextFunction) => Promise<any> | any;
+  controller: (req: AuthRequest<any, any, any, any>, res: Response, next: NextFunction) => Promise<any> | any;
 }
 
 export function registerRoute(router: Router, config: AppRouteConfig, authRequired: boolean = true) {
@@ -55,7 +56,7 @@ export function registerRoute(router: Router, config: AppRouteConfig, authRequir
   }
 
   // 5. Load Controller
-  middlewares.push(controller);
+  middlewares.push(controller as any);
 
   // 6. Register to Express Router
   const method = openApiConfig.method.toLowerCase() as 'get' | 'post' | 'put' | 'delete' | 'patch';
