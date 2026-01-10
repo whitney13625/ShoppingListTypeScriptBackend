@@ -28,7 +28,9 @@ registerRoute(router, {
     }
   },
   controller: authController.register, 
-});
+},
+false
+);
 
 
 // POST /api/auth/login
@@ -53,6 +55,7 @@ registerRoute(router, {
     }
   },
   controller: authController.login, 
-});
+},
+false);
 
 export default router;
