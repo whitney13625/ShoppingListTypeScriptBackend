@@ -15,7 +15,13 @@ registerRoute(router, {
   description: '',
   
   request: {
-    query: authSchemas.RegisterSchema, 
+    body: {
+          content: {
+            'application/json': {
+              schema: authSchemas.RegisterSchema,
+            },
+          },
+        }, 
   },
   
   responses: {
@@ -42,7 +48,13 @@ registerRoute(router, {
   description: '',
   
   request: {
-    query: authSchemas.LoginSchema, 
+    body: {
+          content: {
+            'application/json': {
+              schema: authSchemas.LoginSchema,
+            },
+          },
+        },
   },
   
   responses: {

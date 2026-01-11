@@ -10,11 +10,15 @@ const passwordSchema = z.string()
                         .regex(/[0-9]/, 'at least contain one number')
                         .regex(/[@$!%*?&#]/, 'at least contain one special character');
 
-// Category schema
+// Auth schema
 export const RegisterSchema = z.object({
   email: z.email('Invalid email address'),
   password: passwordSchema,
   confirmPassword: passwordSchema
+})
+.refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"], 
 }).openapi({ description: 'Register Data Object' });
 
 export const LoginSchema = z.object({
