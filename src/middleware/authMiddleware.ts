@@ -14,9 +14,17 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
 
     try {
         const decoded = jwt.verify(token, env.JWT_SECRET) as { userId: string };
-        req.user.id = decoded.userId; // Inject userId for later use in Controllers
+        (req as any).user = {
+            id: decoded.userId
+        }; // Initialise and inject userId for later use in Controllers
+
         next();
     } catch (err) {
+        console.log("--- JWT Error Diagnostic ---");
+        console.log("Full Error Object:", err);
+        if (err instanceof Error) {
+            console.error("JWT Verification Error:", err.message);
+        }
         return res.status(401).json({ error: 'Unauthorized: Invalid token' });
     }
 };
