@@ -28,9 +28,13 @@ export const GetAllCategoriesSchema = z.object({
   search: searchSchema.optional(),
 }).openapi({ description: 'Get all Categories' });
 
-export const GetAllCategoriesResponseSchema = z.array(
-    CategorySchema
-).openapi({ description: 'Response for getting all categories' });  
+export const GetAllCategoriesResponseSchema = z.object({
+  count: z.number().int(),
+  total: z.number().int(),
+  page: z.number().int(),
+  totalPages: z.number().int(),
+  data: z.array(CategorySchema),
+}).openapi({ description: 'Response for getting all categories' });  
 
 // Schema for URL parameters with ID
 export const CategoryItemIdParamsSchema = z.object({

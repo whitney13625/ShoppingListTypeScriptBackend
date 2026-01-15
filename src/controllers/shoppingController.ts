@@ -43,7 +43,6 @@ export const getAllItems = withAuth(async (userId, req, res) => {
   const paginatedItems = filteredItems.slice(startIndex, endIndex);
 
   res.status(200).json({
-    success: true,
     count: paginatedItems.length,
     total: filteredItems.length,
     page: pageNum,
@@ -56,39 +55,25 @@ export const getAllItems = withAuth(async (userId, req, res) => {
 export const getItemById = withAuth(async (userId, req, res) => {
   const { id } = req.params;
   const item = await shoppingService.getItemById(userId, id);
-  res.status(200).json({
-    success: true,
-    data: item,
-  });
+  res.status(200).json(item);
 });
 
 // POST /api/shopping - Create item
 export const createItem = withAuth(async (userId, req, res) => {
   const createdItem = await shoppingService.createItem(userId, req.body);
-  res.status(201).json({
-    success: true,
-    message: 'Item created successfully',
-    data: createdItem,
-  });
+  res.status(201).json(createdItem);
 });
 
 // PUT /api/shopping/:id - Update item
 export const updateItem = withAuth(async (userId, req, res) => {
   const { id } = req.params;
   const updatedItem = await shoppingService.updateItem(userId, id, req.body);
-  res.status(200).json({
-    success: true,
-    message: 'Item updated successfully',
-    data: updatedItem,
-  });
+  res.status(200).json(updatedItem);
 });
 
 // DELETE /api/shopping/:id - Delete item
 export const deleteItem = withAuth(async (userId, req, res) => {
   const { id } = req.params;
     await shoppingService.deleteItem(userId, id);
-    res.status(200).json({
-      success: true,
-      message: 'Item deleted successfully',
-    });
+    res.status(200).send();
 });

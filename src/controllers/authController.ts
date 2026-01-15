@@ -11,9 +11,9 @@ export const register = async (req: Request, res: Response) => {
 
         const hashedPassword = await hashPassword(validatedData.password);
 
-        await userRepository.createUser(validatedData.email, hashedPassword);
+        const user = await userRepository.createUser(validatedData.email, hashedPassword);
 
-        return res.status(201).json({ message: "User registered successfully" });
+        return res.status(201).json(user);
 
     } catch (error) {
         // Handle Zod or DB errors
@@ -24,6 +24,8 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
     try {
         
+        console.log("Credential received: " + JSON.stringify(req.body));
+
         const { email, password } = LoginSchema.parse(req.body);
 
         const user = await userRepository.getUserByEmail(email);
@@ -35,7 +37,6 @@ export const login = async (req: Request, res: Response) => {
         const token = generateToken(user.user.id);
 
         return res.status(200).json({
-            message: "Login successful",
             token: token,
             user: {
                 id: user.user.id,

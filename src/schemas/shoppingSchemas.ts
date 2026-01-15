@@ -36,7 +36,13 @@ export const ShoppingItemWithCategorySchema = ShoppingItemSchema.extend({
   category: CategorySchema.optional().nullable(),
 });
 
-export const ShoppingItemListResponseSchema = z.array(ShoppingItemWithCategorySchema);
+export const ShoppingItemListResponseSchema = z.object({
+  count: z.number().int(),
+  total: z.number().int(),
+  page: z.number().int(),
+  totalPages: z.number().int(),
+  data: z.array(ShoppingItemWithCategorySchema),
+}) .openapi({ description: 'Shopping items response' });
 
 // Schema for creating new item (no id, dates, or purchased status)
 export const CreateShoppingItemSchema = z.object({

@@ -25,11 +25,7 @@ export const getAllCategories = withAuth(async (userId, req, res) => {
       }))
     );
     
-    return res.status(200).json({
-      success: true,
-      count: categoriesWithCount.length,
-      data: categoriesWithCount,
-    });
+    return res.status(200).json(categoriesWithCount);
   }
 
   res.status(200).json({
@@ -51,39 +47,25 @@ export const getCategoryById = withAuth(async (userId, req, res) => {
     response.itemCount = await categoryRepository.getUsageCount(userId, id);
   }
 
-  res.status(200).json({
-    success: true,
-    data: response,
-  });
+  res.status(200).json(response);
 });
 
 // POST /api/categories - Create new category
 export const createCategory = withAuth(async (userId, req, res) => {
   const newCategory = await categoryService.createCategory(userId, req.body);
-    res.status(201).json({
-      success: true,
-      message: 'Category created successfully',
-      data: newCategory,
-    });
+    res.status(201).json(newCategory);
 });
 
 // PUT /api/categories/:id - Update category
 export const updateCategory = withAuth(async (userId, req, res) => {
   const { id } = req.params;
     const updatedCategory = await categoryService.updateCategory(userId, id, req.body);
-    res.status(200).json({
-      success: true,
-      message: 'Category updated successfully',
-      data: updatedCategory,
-    });
+    res.status(200).json(updatedCategory);
 });
 
 // DELETE /api/categories/:id - Delete category
 export const deleteCategory = withAuth(async (userId, req, res) => {
   const { id } = req.params;
     await categoryService.deleteCategory(userId, id);
-    res.status(200).json({
-      success: true,
-      message: 'Category deleted successfully',
-    });
+    res.status(200).send();
 });
