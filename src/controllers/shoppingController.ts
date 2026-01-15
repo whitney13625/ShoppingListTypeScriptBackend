@@ -4,6 +4,7 @@ import { ShoppingService } from '../services/shoppingService';
 import { PostgresShoppingRepository } from '../repositories/implementations/postgresShoppingRepository';
 import { PostgresCategoryRepository } from '../repositories/implementations/postgresCategoryRepository';
 import { withAuth } from '../utils/withAuth';
+import { ShoppingItemListResponse } from '../schemas/shoppingSchemas';
 
 // Instantiate repositories and service
 const shoppingRepository = new PostgresShoppingRepository();
@@ -42,13 +43,15 @@ export const getAllItems = withAuth(async (userId, req, res) => {
   const endIndex = pageNum * limitNum;
   const paginatedItems = filteredItems.slice(startIndex, endIndex);
 
-  res.status(200).json({
+  const result: ShoppingItemListResponse = {
     count: paginatedItems.length,
     total: filteredItems.length,
     page: pageNum,
     totalPages: Math.ceil(filteredItems.length / limitNum),
-    data: paginatedItems,
-  });
+    data: paginatedItems
+  }
+
+  res.status(200).json(result);
 });
 
 // GET /api/shopping/:id - Get item by ID
