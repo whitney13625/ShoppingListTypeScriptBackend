@@ -5,33 +5,23 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-
-    ## GitHub Actions has build in Service Container, so no need to npm run db:up on CI
-    # services:
-    #   postgres:
-    #     image: postgres:15-alpine
-    #     env:
-    #       POSTGRES_USER: postgres
-    #       POSTGRES_PASSWORD: postgres
-    #       POSTGRES_DB: shopping_test_db
-    #     ports:
-    #       - 5433:5432
-    #     options: >-
-    #       --health-cmd pg_isready
-    #       --health-interval 10s
-    #       --health-timeout 5s
-    #       --health-retries 5
-
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
-        
+
+    # Generate .env.test for Docker Compose to read
+    - name: Create .env.test file
+      run: |
+        echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env.test
+        echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env.test
+        echo "POSTGRES_DB=${{ vars.POSTGRES_DB }}" >> .env.test
+        echo "DATABASE_URL=postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5433/${{ vars.POSTGRES_DB }}" >> .env.test
+
     - run: npm ci
     
-    # Run the test directly (Service already established the DB)
-    - run: npm run test:integration
-      env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5433/shopping_test_db
+    # Run original test command: docker compose -f docker-compose.test.yml up 
+    - name: Run Integration Tests
+      run: npm run test:integration
