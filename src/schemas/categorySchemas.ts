@@ -12,7 +12,7 @@ const dateSchema = z.date().openapi({ example: '2025-12-29T10:00:00.000Z' });
 // Category schema
 export const CategorySchema = z.object({
   id: z.uuid(),
-  name: nameSchema.openapi({ example: 'Vegitables' }),
+  name: nameSchema.openapi({ example: 'Vegetables' }),
   description: descriptionSchema.openapi({ example: 'Something Green' }),
   icon: iconSchema.openapi({ example: '🥬' }),
   createdAt: dateSchema,

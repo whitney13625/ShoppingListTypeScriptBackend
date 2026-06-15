@@ -23,7 +23,7 @@ export const CategoryEnum = z.enum([
 export const ShoppingItemSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1, 'Name is required').max(100, 'Name must be at most 100 characters').openapi({ example: 'Spinach' }),
-  quantity: z.number().int().nonnegative('Quantity must be non-negative').openapi({ example: 'Vegitables' }),
+  quantity: z.number().int().nonnegative('Quantity must be non-negative').openapi({ example: 1 }),
   categoryId: z.string().uuid().optional().nullable(),
   categoryName: z.string().optional().nullable(),
   purchased: z.boolean(),
