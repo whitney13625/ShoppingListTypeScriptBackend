@@ -4,23 +4,34 @@ import { ShoppingItem } from '../../schemas/shoppingSchemas';
 import { ShoppingRepository } from '../interfaces/shoppingRepository';
 
 export class InMemoryShoppingRepository implements ShoppingRepository {
-  private items: Map<string, ShoppingItem> = new Map();
+  private userItems: Map<string, Map<string, ShoppingItem>> = new Map();
 
-  async getAll(): Promise<ShoppingItem[]> {
-    return Array.from(this.items.values());
+  private getItemsForUser(userId: string): Map<string, ShoppingItem> {
+    if (!this.userItems.has(userId)) {
+      this.userItems.set(userId, new Map());
+    }
+    return this.userItems.get(userId)!;
   }
 
-  async getById(id: string): Promise<ShoppingItem | undefined> {
-    return this.items.get(id);
+  async getAll(userId: string): Promise<ShoppingItem[]> {
+    const items = this.getItemsForUser(userId);
+    return Array.from(items.values());
   }
 
-  async create(item: ShoppingItem): Promise<ShoppingItem> {
-    this.items.set(item.id, item);
+  async getById(userId: string, id: string): Promise<ShoppingItem | undefined> {
+    const items = this.getItemsForUser(userId);
+    return items.get(id);
+  }
+
+  async create(userId: string, item: ShoppingItem): Promise<ShoppingItem> {
+    const items = this.getItemsForUser(userId);
+    items.set(item.id, item);
     return item;
   }
 
-  async update(id: string, updates: Partial<ShoppingItem>): Promise<ShoppingItem | undefined> {
-    const item = this.items.get(id);
+  async update(userId: string, id: string, updates: Partial<ShoppingItem>): Promise<ShoppingItem | undefined> {
+    const items = this.getItemsForUser(userId);
+    const item = items.get(id);
     if (!item) return undefined;
 
     const updatedItem = {
@@ -30,15 +41,17 @@ export class InMemoryShoppingRepository implements ShoppingRepository {
       updatedAt: new Date(),
     };
 
-    this.items.set(id, updatedItem);
+    items.set(id, updatedItem);
     return updatedItem;
   }
 
-  async delete(id: string): Promise<boolean> {
-    return this.items.delete(id);
+  async delete(userId: string, id: string): Promise<boolean> {
+    const items = this.getItemsForUser(userId);
+    return items.delete(id);
   }
 
-  async clear(): Promise<void> {
-    this.items.clear();
+  async clear(userId: string): Promise<void> {
+    const items = this.getItemsForUser(userId);
+    items.clear();
   }
 }

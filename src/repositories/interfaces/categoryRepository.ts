@@ -3,12 +3,12 @@
 import { Category } from '../../schemas/categorySchemas';
 
 export interface CategoryRepository {
-  getAll(): Promise<Category[]>;
-  getById(id: string): Promise<Category | undefined>;
-  getByName(name: string): Promise<Category | undefined>;
-  create(category: Omit<Category, 'id' | 'createdAt' | 'updatedAt'>): Promise<Category>;
-  update(id: string, updates: Partial<Omit<Category, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Category | undefined>;
-  delete(id: string): Promise<boolean>;
-  isInUse(id: string): Promise<boolean>;
-  getUsageCount(id: string): Promise<number>;
+  getAll(userId: string): Promise<Category[]>;
+  getById(userId: string, id: string): Promise<Category | undefined>;
+  getByName(userId: string, name: string): Promise<Category | undefined>;
+  create(userId: string, category: Omit<Category, 'id' | 'createdAt' | 'updatedAt'>): Promise<Category>;
+  update(userId: string, id: string, updates: Partial<Omit<Category, 'id' | 'createdAt' | 'updatedAt'>>): Promise<Category | undefined>;
+  delete(userId: string, id: string): Promise<boolean>;
+  isInUse(userId: string, id: string): Promise<boolean>;
+  getUsageCount(userId: string, id: string): Promise<number>;
 }

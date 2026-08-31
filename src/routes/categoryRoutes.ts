@@ -16,7 +16,6 @@ import { registerRoute } from '../schemas/helper/routeRegistryHelper';
 const router = Router();
 
 // Define all routes with Zod validation middleware
-// NOTE: The Swagger is registered in src/lib/openApiRegistry.ts
 
 registerRoute(router, {
   method: 'get',
